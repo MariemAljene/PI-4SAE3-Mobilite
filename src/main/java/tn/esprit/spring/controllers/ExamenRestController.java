@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.Condidacy;
 import tn.esprit.spring.entities.Opportunity;
 import tn.esprit.spring.interfaces.Pi_Mobility;
+import tn.esprit.spring.repositories.CondidacyRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -144,6 +145,26 @@ public class ExamenRestController {
 
 
 		return pi_mobility.getTopNCandidatures(opportunityId);
+	}
+	@Autowired
+	CondidacyRepository condidacyRepository;
+	@PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
+	public ResponseEntity<String>SENDMail(@PathVariable int id_Opportunity) {
+		 int n =0;
+			List<Condidacy> condidacy=condidacyRepository.findAll();
+			for(Condidacy condidacy1: condidacy)
+			{
+				if(condidacy1.getOpportunity() .getId_Opportunity()==id_Opportunity)
+				{
+					n++;
+				}
+			}
+		try {
+			pi_mobility.sendSelectedCandidatesEmails( id_Opportunity);
+			return ResponseEntity.ok("Emails sent successfully to the top " + n + " candidates.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
+		}
 	}
 
 }

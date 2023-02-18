@@ -189,7 +189,7 @@ condidacy.setScore(0);
         return condidacyRepository.findAll();
     }
     public void sendEmailToTopNCandidates(int n, int opportunityId) throws MessagingException {
-        List<Condidacy> sortedCondidacyList =trierEtudiantsParScore (opportunityId);
+        List<Condidacy> sortedCondidacyList =getTopNCandidatures(opportunityId);
 
         for (int i = 0; i < Math.min(n, sortedCondidacyList.size()); i++) {
             Condidacy condidacy = sortedCondidacyList.get(i);
@@ -257,5 +257,27 @@ condidacy.setScore(0);
 
         return topNCandidatures;
     }
+    public void sendSelectedCandidatesEmails(Integer opportunityId) {
+        List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
 
-}
+        for (Condidacy candidate : selectedCandidates) {
+            // Créer un objet `SimpleMailMessage` pour l'email à envoyer
+            SimpleMailMessage message = new SimpleMailMessage();
+
+            // Définir le destinataire et le sujet de l'email
+            message.setTo(candidate.getUser().getEmail());
+            message.setSubject("Opportunity selection");
+
+            // Définir le corps du message de l'e-mail
+            message.setText("Dear " + candidate.getUser().getUserName() + ",\n\n" +
+                    "Congratulations! You have been selected for the following opportunity:\n\n" +
+                    opportunityRepository.findById(opportunityId).get().getTitle() + "\n\n" +
+                    "Please contact the opportunity provider for further details.\n\n" +
+                    "Best regards,\n" +
+                    "Your Application Team");
+
+            // Envoyer l'email
+            javaMailSender.send(message);
+        }
+
+}}
