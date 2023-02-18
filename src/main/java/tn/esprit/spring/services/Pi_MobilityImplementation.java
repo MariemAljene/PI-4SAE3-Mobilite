@@ -229,6 +229,10 @@ condidacy.setScore(0);
             for (int i = 0; i < n && i < CondidacyTOP.size(); i++)
             {
                 topNCandidatures.add(CondidacyTOP.get(i));
+                CondidacyTOP.get(i).setStatus(status.Accepted);
+                userRepository.save(CondidacyTOP.get(i).getUser());
+
+
             }
         }
         else
@@ -241,7 +245,12 @@ condidacy.setScore(0);
                     if (count == n) {
                         break;
                     }
+                    candidacy.setStatus(status.Accepted);
+                    userRepository.save(candidacy.getUser());
+
                 }
+                else   candidacy.setStatus(status.Refused);
+                       userRepository.save(candidacy.getUser());
             }
         }
 

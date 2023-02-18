@@ -15,12 +15,12 @@ public class OpenAPIConfig {
                 .info(infoAPI());
     }
     public Info infoAPI() {
-        return new Info().title("Examen-Blanc")
+        return new Info().title("ESPRIT Mobility")
                 .contact(contactAPI());
     }
     public Contact contactAPI() {
         Contact contact = new Contact().name("Equipe ASI II")
-                .email("chahnez.sardouk@esprit.tn")
+                .email("departement.mobility@gmail.com")
                 .url("https://www.linkedin.com/in/**********/");
         return contact;
     }
