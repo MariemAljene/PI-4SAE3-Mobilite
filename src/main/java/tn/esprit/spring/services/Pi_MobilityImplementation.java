@@ -159,35 +159,20 @@ condidacy.setScore(0);
     }
     public List<Condidacy> trierEtudiantsParScore(Integer Id_Opportunity) {
 
-
-        //List<User> etudiants = userRepository.findByOpportuniteId(opportuniteId);
-/*List<Condidacy> CondidacyList =new ArrayList<>();
-/
-    for( Condidacy condidacy :condidacyRepository.findAll())
-    {
-        if(condidacy.getOpportunity().getId_Opportunity()==Id_Opportunity)
+        List<Condidacy> ToSort =new ArrayList<>();
+        Opportunity opportunity =opportunityRepository.findById(Id_Opportunity).orElse(null);
+        for(Condidacy condidacy:condidacyRepository.findAll())
         {
-            CondidacyList.add(condidacy);
-        }
-    }*/
-
-        // Calculer le score de chaque étudiant pour l'opportunité donnée
-
-           // Opportunity opportunite = student.getOpportunities();
-     /*  for( Condidacy condidacy :CalculScore(Id_Opportunity))
-    {
-            {
-                float score =(condidacy.getMoyenne_1year() + condidacy.getMoyenne_2year()*2 + condidacy.getMoyenne_3year()*3)/6;
-                condidacy.setScore(score);
+            if (condidacy.getOpportunity().getId_Opportunity()==Id_Opportunity)
+            { float coefTotal =opportunity.getCoef1stYear()+opportunity.getCoef2stYear()+opportunity.getCoef3stYear();
+                condidacy.setScore((condidacy.getMoyenne_1year()*opportunity.getCoef1stYear()+condidacy.getMoyenne_2year()*opportunity.getCoef2stYear()+condidacy.getMoyenne_3year()*opportunity.getCoef3stYear())/coefTotal);
+                condidacyRepository.save(condidacy);
+                ToSort.add(condidacy);
             }
         }
-       */
-     List<Condidacy>   condidacy= CalculScore(Id_Opportunity);
-
         // Trier la liste des étudiants pour l'opportunité donnée par ordre décroissant de score
-        condidacy.sort(Comparator.comparing(Condidacy::getScore).reversed());
-
-        return condidacy;
+        ToSort.sort(Comparator.comparing(Condidacy::getScore).reversed());
+        return ToSort;
     }
 
     @Override
@@ -231,6 +216,37 @@ condidacy.setScore(0);
         message.setTo("mariemaljene0@gmail.com");
         message.setSubject("test");
        */
+    }
+    public List<Condidacy> getTopNCandidatures(Integer opportunityId) {
+        Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
+        int n = opportunity.getCapacity();
+        // Trier les candidatures par score en utilisant la méthode que vous avez implémentée
+         List<Condidacy> CondidacyTOP =trierEtudiantsParScore( opportunityId);
+        // Récupérer les n candidatures avec les scores les plus élevés
+        List<Condidacy> topNCandidatures = new ArrayList<>();
+        if(opportunity.getNeeds()==0)
+        {
+            for (int i = 0; i < n && i < CondidacyTOP.size(); i++)
+            {
+                topNCandidatures.add(CondidacyTOP.get(i));
+            }
+        }
+        else
+        {
+            int count = 0;
+            for (Condidacy candidacy : CondidacyTOP) {
+                if (candidacy.getScore() >= opportunity.getNeeds()) {
+                    topNCandidatures.add(candidacy);
+                    count++;
+                    if (count == n) {
+                        break;
+                    }
+                }
+            }
+        }
+
+
+        return topNCandidatures;
     }
 
 }

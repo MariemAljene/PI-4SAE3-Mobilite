@@ -139,6 +139,12 @@ public class ExamenRestController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
 		}
 	}
+	@GetMapping("candidatures/top/{opportunityId}")
+	public List<Condidacy> getTopNCandidatures(@PathVariable Integer opportunityId) {
+
+
+		return pi_mobility.getTopNCandidatures(opportunityId);
+	}
 
 }
 

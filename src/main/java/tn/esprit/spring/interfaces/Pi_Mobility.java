@@ -26,5 +26,6 @@ public List<Condidacy> RtreiveStudentCondidacies(String id_Student); //Reste
     List<Condidacy> trierEtudiantsParScore(Integer Id_Opportunity);
     List<Condidacy> CalculScore(Integer Id_Opportunity);
    void sendEmailToTopNCandidates(int n, int opportunityId) throws MessagingException ;
+    public List<Condidacy> getTopNCandidatures(Integer opportunityId);
 
 }

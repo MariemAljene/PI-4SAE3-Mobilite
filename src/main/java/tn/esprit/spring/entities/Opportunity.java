@@ -21,21 +21,23 @@ public class Opportunity   implements Serializable {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer  Id_Opportunity;
-    private  int    Capacity;
+    private int    Capacity;
     private LocalDate StarDate ;
     private  LocalDate EndDate;
     @Enumerated(EnumType.STRING)
-
     private  TypeOpp Type ;
     @Enumerated(EnumType.STRING)
-
     private  Grade grade ;
     @Enumerated(EnumType.STRING)
-
     private  Speciality specialite ;
     private  float needs ;
     private  String Description ;
     private  String Title;
+    private  float Coef1stYear;
+    private  float Coef2stYear;
+    private  float Coef3stYear;
+
+
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
