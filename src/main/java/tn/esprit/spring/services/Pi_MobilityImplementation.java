@@ -1,10 +1,12 @@
 package tn.esprit.spring.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.*;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import tn.esprit.spring.entities.Condidacy;
 import tn.esprit.spring.entities.Opportunity;
 import tn.esprit.spring.entities.User;
@@ -15,8 +17,12 @@ import tn.esprit.spring.repositories.OpportunityRepository;
 import tn.esprit.spring.repositories.RoleRepository;
 import tn.esprit.spring.repositories.UserRepositoy;
 
+import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -138,9 +144,9 @@ condidacy.setScore(0);
     @Override
     public List<Condidacy> RtreiveStudentCondidacies(String id_Student) {
         User student=userRepository.findById(id_Student).orElse(null);
-        List<Condidacy> condidacies =student.getCandidacies();
+      //  List<Condidacy> condidacies =student.getCandidacies();
 
-        return condidacies;
+        return student.getCandidacies();
     }
 
     @Override
@@ -280,4 +286,37 @@ condidacy.setScore(0);
             javaMailSender.send(message);
         }
 
-}}
+}
+    public void sendSelectedCandidatesEmailsTest(Integer opportunityId)  throws MessagingException, IOException{
+        List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
+
+        for (Condidacy candidate : selectedCandidates) {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(candidate.getUser().getEmail());
+            helper.setSubject("Opportunity selection");
+
+            // Set the HTML content of the email
+            String htmlContent = "<html><body>"
+                    + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
+                    + "<p>Congratulations! You have been selected for the following opportunity:</p>"
+                    + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() +  "</h1>"
+                    + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() +  "</h2>"
+                    + "<p>Please contact the opportunity provider for further details.</p>"
+                    + "<img src='cid:image'>"
+                    + "<p>Best regards,<br>Your Application Team</p>"
+                    + "</body></html>";
+
+            helper.setText(htmlContent, true);
+
+            // Add an image as an attachment
+            ClassPathResource imageResource = new ClassPathResource("img.png");
+            InputStream inputStream = imageResource.getInputStream();
+            DataSource imageDataSource = new ByteArrayDataSource(inputStream, "image/png");
+            helper.addInline("image", imageDataSource);
+
+            javaMailSender.send(message);
+        }}
+
+        }

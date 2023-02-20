@@ -131,15 +131,7 @@ public class ExamenRestController {
 
 	}
 
-	@PostMapping("/{id_Opportunity}/sendEmailToTopNCandidates")
-	public ResponseEntity<String> sendEmailToTopNCandidates(@PathVariable int id_Opportunity, @RequestParam int n) {
-		try {
-			pi_mobility.sendEmailToTopNCandidates(n, id_Opportunity);
-			return ResponseEntity.ok("Emails sent successfully to the top " + n + " candidates.");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
-		}
-	}
+
 	@GetMapping("candidatures/top/{opportunityId}")
 	public List<Condidacy> getTopNCandidatures(@PathVariable Integer opportunityId) {
 
@@ -161,6 +153,24 @@ public class ExamenRestController {
 			}
 		try {
 			pi_mobility.sendSelectedCandidatesEmails( id_Opportunity);
+			return ResponseEntity.ok("Emails sent successfully to the top " + n + " candidates.");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
+		}
+	}
+	@PostMapping("Condidacy/sendSelectedCandidatesEmailsTest/{id_Opportunity}")
+	public ResponseEntity<String>sendSelectedCandidatesEmailsTest(@PathVariable int id_Opportunity) {
+		int n =0;
+		List<Condidacy> condidacy=condidacyRepository.findAll();
+		for(Condidacy condidacy1: condidacy)
+		{
+			if(condidacy1.getOpportunity() .getId_Opportunity()==id_Opportunity)
+			{
+				n++;
+			}
+		}
+		try {
+			pi_mobility.sendSelectedCandidatesEmailsTest( id_Opportunity);
 			return ResponseEntity.ok("Emails sent successfully to the top " + n + " candidates.");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());

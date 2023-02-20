@@ -5,6 +5,7 @@ import tn.esprit.spring.entities.Opportunity;
 import tn.esprit.spring.entities.User;
 
 import javax.mail.MessagingException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,5 +29,6 @@ public List<Condidacy> RtreiveStudentCondidacies(String id_Student); //Reste
    void sendEmailToTopNCandidates(int n, int opportunityId) throws MessagingException ;
     public List<Condidacy> getTopNCandidatures(Integer opportunityId);
     public void sendSelectedCandidatesEmails(Integer opportunityId);
+    void sendSelectedCandidatesEmailsTest(Integer opportunityId)  throws MessagingException, IOException;
 
 }
