@@ -102,6 +102,15 @@ public class User {
     private List<Post> postList;
     @OneToMany( cascade = CascadeType.ALL)
     private  List<Comment> commentList;
+    @JsonIgnore
+    @OneToMany(mappedBy = "userQ")
+    private List<Question> questions = new ArrayList<>();
+
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "userRec")
+    private List<Reclamation> reclamations = new ArrayList<>();
 
 
 }
