@@ -36,7 +36,7 @@ public class Opportunity   implements Serializable {
     private  float Coef1stYear;
     private  float Coef2stYear;
     private  float Coef3stYear;
-
+@JsonIgnore
 
     @ManyToOne
     @JoinColumn(name = "created_by")

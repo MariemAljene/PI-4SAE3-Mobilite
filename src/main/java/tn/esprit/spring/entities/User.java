@@ -90,16 +90,20 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Condidacy> candidacies = new ArrayList<>();
+ @JsonIgnore
     @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL)
     public List<Participant> roomsList;
     @OneToMany(mappedBy="rdv", cascade = CascadeType.ALL)
     @JsonIgnore
     @ToString.Exclude
     private List<Appointement> Appointements ;
+    @JsonIgnore
     @OneToMany( cascade = CascadeType.ALL)
     private  List<Rating> ratingList;
+    @JsonIgnore
     @OneToMany( cascade = CascadeType.ALL)
     private List<Post> postList;
+    @JsonIgnore
     @OneToMany( cascade = CascadeType.ALL)
     private  List<Comment> commentList;
     @JsonIgnore

@@ -34,7 +34,7 @@ public class Condidacy implements Serializable {
     @JoinColumn(name = "user_id")
 
     private User user;
-
+@JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opportunity_id")
     private Opportunity opportunity;

@@ -86,12 +86,27 @@ opportunityRepository.deleteById(id);
 
     @Override
     public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student,int ID_Opportuinity) {
-      condidacy.setStatus(status.In_Progress);
+       List<Condidacy>  FindingCandidacy=new ArrayList<>();
+
+      for (Condidacy condidacy1:condidacyRepository.findAll())
+      {
+          if(condidacy1.getOpportunity().getId_Opportunity()==ID_Opportuinity && condidacy1.getUser().getUserName().equals(Id_Student) )
+          {
+              FindingCandidacy.add(condidacy1);
+          }
+
+      }
+      if(FindingCandidacy!=null)
+      {
+          throw new RuntimeException("Student has already applied for this opportunity");
+      }
+
+        condidacy.setStatus(status.In_Progress);
         User user=userRepository.findById(Id_Student).orElse(null);
-Opportunity opportunity =opportunityRepository.findById(ID_Opportuinity).orElse(null);
+        Opportunity opportunity =opportunityRepository.findById(ID_Opportuinity).orElse(null);
         condidacy.setUser(user);
-  condidacy.setOpportunity(opportunity);
-condidacy.setScore(0);
+        condidacy.setOpportunity(opportunity);
+        condidacy.setScore(0);
         return condidacyRepository.save(condidacy);
     }
 
