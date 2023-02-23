@@ -3,6 +3,7 @@ package tn.esprit.spring.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -89,4 +90,18 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Condidacy> candidacies = new ArrayList<>();
+    @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL)
+    public List<Participant> roomsList;
+    @OneToMany(mappedBy="rdv", cascade = CascadeType.ALL)
+    @JsonIgnore
+    @ToString.Exclude
+    private List<Appointement> Appointements ;
+    @OneToMany( cascade = CascadeType.ALL)
+    private  List<Rating> ratingList;
+    @OneToMany( cascade = CascadeType.ALL)
+    private List<Post> postList;
+    @OneToMany( cascade = CascadeType.ALL)
+    private  List<Comment> commentList;
+
+
 }
