@@ -24,7 +24,7 @@ public class Condidacy implements Serializable {
     private  float Moyenne_2year;
     private  float Moyenne_3year;
     private float  score;
-
+    private boolean attempted = false;
     private  String MotivationDescription ;
     @Enumerated(EnumType.STRING)
 
@@ -38,5 +38,8 @@ public class Condidacy implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opportunity_id")
     private Opportunity opportunity;
+    @OneToOne(mappedBy = "condidacy", cascade = CascadeType.ALL)
+    private QuizAttempt quizAttempt;
+
 
 }

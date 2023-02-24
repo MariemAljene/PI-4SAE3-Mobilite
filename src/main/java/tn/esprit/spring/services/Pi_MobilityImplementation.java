@@ -1,4 +1,5 @@
 package tn.esprit.spring.services;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.*;
@@ -7,15 +8,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
+import org.webjars.NotFoundException;
 import tn.esprit.spring.entities.Condidacy;
 import tn.esprit.spring.entities.Opportunity;
 import tn.esprit.spring.entities.User;
 import tn.esprit.spring.entities.status;
 import tn.esprit.spring.interfaces.Pi_Mobility;
-import tn.esprit.spring.repositories.CondidacyRepository;
-import tn.esprit.spring.repositories.OpportunityRepository;
-import tn.esprit.spring.repositories.RoleRepository;
-import tn.esprit.spring.repositories.UserRepositoy;
+import tn.esprit.spring.repositories.*;
 
 import javax.activation.DataSource;
 import javax.mail.MessagingException;
@@ -23,10 +22,11 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.time.*;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,13 +36,24 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     @Autowired
     CondidacyRepository condidacyRepository;
     @Autowired
-    OpportunityRepository opportunityRepository ;
+    OpportunityRepository opportunityRepository;
     @Autowired
-    UserRepositoy userRepository ;
+    UserRepositoy userRepository;
     @Autowired
     RoleRepository roleRepository;
-@Autowired
-JavaMailSender javaMailSender;
+    @Autowired
+    JavaMailSender javaMailSender;
+    @Autowired
+    AnswerRepository answerRepository;
+    @Autowired
+    AnswerAttemptRepository answerAttemptRepository;
+    @Autowired
+    QuestionRepository questionRepository;
+    @Autowired
+    QuizRepository quizRepository;
+    @Autowired
+    QuizAttemptRepository quizAttemptRepository;
+
     @Override
     public List<Opportunity> findAllOpportunities() {
         return opportunityRepository.findAll();
@@ -50,28 +61,28 @@ JavaMailSender javaMailSender;
 
     @Override
     public Optional<Opportunity> findOpportunityById(Integer id) {
-        return opportunityRepository.findById( id);
+        return opportunityRepository.findById(id);
     }
 
     @Override
-    public Opportunity createOpportunity(Opportunity opportunity,String Id_Partner) {
- User Partner =userRepository.findById(Id_Partner).orElse(null);
- opportunity.setCreatedBy(Partner);
+    public Opportunity createOpportunity(Opportunity opportunity, String Id_Partner) {
+        User Partner = userRepository.findById(Id_Partner).orElse(null);
+        opportunity.setCreatedBy(Partner);
 
- return opportunityRepository.save(opportunity);
+        return opportunityRepository.save(opportunity);
 
 
     }
 
     @Override
     public Opportunity updateOpportunity(Opportunity opportunity) {
-       // opportunity.setId_Opportunity()
+        // opportunity.setId_Opportunity()
         return opportunityRepository.save(opportunity);
     }
 
     @Override
     public void deleteOpportunityById(Integer id) {
-opportunityRepository.deleteById(id);
+        opportunityRepository.deleteById(id);
     }
 
     @Override
@@ -85,25 +96,22 @@ opportunityRepository.deleteById(id);
     }
 
     @Override
-    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student,int ID_Opportuinity) {
-       List<Condidacy>  FindingCandidacy=new ArrayList<>();
+    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int ID_Opportuinity) {
+        List<Condidacy> FindingCandidacy = new ArrayList<>();
 
-      for (Condidacy condidacy1:condidacyRepository.findAll())
-      {
-          if(condidacy1.getOpportunity().getId_Opportunity()==ID_Opportuinity && condidacy1.getUser().getUserName().equals(Id_Student) )
-          {
-              FindingCandidacy.add(condidacy1);
-          }
+        for (Condidacy condidacy1 : condidacyRepository.findAll()) {
+            if (condidacy1.getOpportunity().getId_Opportunity() == ID_Opportuinity && condidacy1.getUser().getUserName().equals(Id_Student)) {
+                FindingCandidacy.add(condidacy1);
+            }
 
-      }
-      if(FindingCandidacy!=null)
-      {
-          throw new RuntimeException("Student has already applied for this opportunity");
-      }
+        }
+        if (FindingCandidacy != null) {
+            throw new RuntimeException("Student has already applied for this opportunity");
+        }
 
         condidacy.setStatus(status.In_Progress);
-        User user=userRepository.findById(Id_Student).orElse(null);
-        Opportunity opportunity =opportunityRepository.findById(ID_Opportuinity).orElse(null);
+        User user = userRepository.findById(Id_Student).orElse(null);
+        Opportunity opportunity = opportunityRepository.findById(ID_Opportuinity).orElse(null);
         condidacy.setUser(user);
         condidacy.setOpportunity(opportunity);
         condidacy.setScore(0);
@@ -117,8 +125,9 @@ opportunityRepository.deleteById(id);
 
     @Override
     public void deleteCandidateById(Integer id) {
-                   condidacyRepository.deleteById(id);
+        condidacyRepository.deleteById(id);
     }
+
     public String extraireChaine(String chaine) {
         int index_chiffre = -1;
         for (int i = 1; i < chaine.length(); i++) {
@@ -136,37 +145,36 @@ opportunityRepository.deleteById(id);
 
     @Override
     public List<Opportunity> RetreiveOpportunitiesForStudentbySpecialite(String id_Student) {
-       User Student=userRepository.findById(id_Student).orElse(null);
+        User Student = userRepository.findById(id_Student).orElse(null);
 
-       String specialite = extraireChaine(Student.getGrade());
-      // System.out.println(specialite);
+        String specialite = extraireChaine(Student.getGrade());
+        // System.out.println(specialite);
 
-           List<Opportunity> opportunities =new ArrayList<>();
+        List<Opportunity> opportunities = new ArrayList<>();
 
-        for(Opportunity op:opportunityRepository.findAll())
-       {String sp= String.valueOf(op.getSpecialite());
-           if(sp.toUpperCase().equals(specialite.toUpperCase()) || sp.toUpperCase().equals("ALL"))
-           {
-                  opportunities.add(op);
-                  System.out.println(op.getSpecialite());
-           }
-       }
-
-
-        return  opportunities;
+        for (Opportunity op : opportunityRepository.findAll()) {
+            String sp = String.valueOf(op.getSpecialite());
+            if (sp.toUpperCase().equals(specialite.toUpperCase()) || sp.toUpperCase().equals("ALL")) {
+                opportunities.add(op);
+                System.out.println(op.getSpecialite());
+            }
         }
+
+
+        return opportunities;
+    }
 
     @Override
     public List<Condidacy> RtreiveStudentCondidacies(String id_Student) {
-        User student=userRepository.findById(id_Student).orElse(null);
-      //  List<Condidacy> condidacies =student.getCandidacies();
+        User student = userRepository.findById(id_Student).orElse(null);
+        //  List<Condidacy> condidacies =student.getCandidacies();
 
         return student.getCandidacies();
     }
 
     @Override
     public Condidacy UpdateCondidacy(Integer id_Condidacy) {
-        Condidacy condidacy= condidacyRepository.findById(id_Condidacy).orElse(null);
+        Condidacy condidacy = condidacyRepository.findById(id_Condidacy).orElse(null);
         condidacy.setStatus(status.Accepted);
 
         return condidacyRepository.save(condidacy);
@@ -178,15 +186,15 @@ opportunityRepository.deleteById(id);
         condidacy.setStatus(status.Accepted);
         return condidacy.getUser().getUserName();
     }
+
     public List<Condidacy> trierEtudiantsParScore(Integer Id_Opportunity) {
 
-        List<Condidacy> ToSort =new ArrayList<>();
-        Opportunity opportunity =opportunityRepository.findById(Id_Opportunity).orElse(null);
-        for(Condidacy condidacy:condidacyRepository.findAll())
-        {
-            if (condidacy.getOpportunity().getId_Opportunity()==Id_Opportunity)
-            { float coefTotal =opportunity.getCoef1stYear()+opportunity.getCoef2stYear()+opportunity.getCoef3stYear();
-                condidacy.setScore((condidacy.getMoyenne_1year()*opportunity.getCoef1stYear()+condidacy.getMoyenne_2year()*opportunity.getCoef2stYear()+condidacy.getMoyenne_3year()*opportunity.getCoef3stYear())/coefTotal);
+        List<Condidacy> ToSort = new ArrayList<>();
+        Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
+        for (Condidacy condidacy : condidacyRepository.findAll()) {
+            if (condidacy.getOpportunity().getId_Opportunity() == Id_Opportunity) {
+                float coefTotal = opportunity.getCoef1stYear() + opportunity.getCoef2stYear() + opportunity.getCoef3stYear();
+                condidacy.setScore((condidacy.getMoyenne_1year() * opportunity.getCoef1stYear() + condidacy.getMoyenne_2year() * opportunity.getCoef2stYear() + condidacy.getMoyenne_3year() * opportunity.getCoef3stYear()) / coefTotal);
                 condidacyRepository.save(condidacy);
                 ToSort.add(condidacy);
             }
@@ -198,19 +206,18 @@ opportunityRepository.deleteById(id);
 
     @Override
     public List<Condidacy> CalculScore(Integer Id_Opportunity) {
-        Opportunity opportunity =opportunityRepository.findById(Id_Opportunity).orElse(null);
-        for(Condidacy condidacy:condidacyRepository.findAll())
-        {
-            if (condidacy.getOpportunity().getId_Opportunity()==Id_Opportunity)
-            {
-                condidacy.setScore((condidacy.getMoyenne_1year()+condidacy.getMoyenne_2year()*2+condidacy.getMoyenne_3year()*3)/6);
+        Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
+        for (Condidacy condidacy : condidacyRepository.findAll()) {
+            if (condidacy.getOpportunity().getId_Opportunity() == Id_Opportunity) {
+                condidacy.setScore((condidacy.getMoyenne_1year() + condidacy.getMoyenne_2year() * 2 + condidacy.getMoyenne_3year() * 3) / 6);
                 condidacyRepository.save(condidacy);
             }
         }
         return condidacyRepository.findAll();
     }
+
     public void sendEmailToTopNCandidates(int n, int opportunityId) throws MessagingException {
-        List<Condidacy> sortedCondidacyList =getTopNCandidatures(opportunityId);
+        List<Condidacy> sortedCondidacyList = getTopNCandidatures(opportunityId);
 
         for (int i = 0; i < Math.min(n, sortedCondidacyList.size()); i++) {
             Condidacy condidacy = sortedCondidacyList.get(i);
@@ -226,7 +233,7 @@ opportunityRepository.deleteById(id);
                     + "L'équipe de recrutement";
 
             // Envoyer l'e-mail en utilisant JavaMail
-            MimeMessage email =  javaMailSender.createMimeMessage();
+            MimeMessage email = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(email, true);
             helper.setTo(to);
             helper.setSubject(subject);
@@ -238,26 +245,23 @@ opportunityRepository.deleteById(id);
         message.setSubject("test");
        */
     }
+
     public List<Condidacy> getTopNCandidatures(Integer opportunityId) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
         int n = opportunity.getCapacity();
         // Trier les candidatures par score en utilisant la méthode que vous avez implémentée
-         List<Condidacy> CondidacyTOP =trierEtudiantsParScore( opportunityId);
+        List<Condidacy> CondidacyTOP = trierEtudiantsParScore(opportunityId);
         // Récupérer les n candidatures avec les scores les plus élevés
         List<Condidacy> topNCandidatures = new ArrayList<>();
-        if(opportunity.getNeeds()==0)
-        {
-            for (int i = 0; i < n && i < CondidacyTOP.size(); i++)
-            {
+        if (opportunity.getNeeds() == 0) {
+            for (int i = 0; i < n && i < CondidacyTOP.size(); i++) {
                 topNCandidatures.add(CondidacyTOP.get(i));
-                CondidacyTOP.get(i).setStatus(status.Accepted);
+                CondidacyTOP.get(i).setStatus(status.Pre_Selected);
                 userRepository.save(CondidacyTOP.get(i).getUser());
 
 
             }
-        }
-        else
-        {
+        } else {
             int count = 0;
             for (Condidacy candidacy : CondidacyTOP) {
                 if (candidacy.getScore() >= opportunity.getNeeds()) {
@@ -269,15 +273,15 @@ opportunityRepository.deleteById(id);
                     candidacy.setStatus(status.Accepted);
                     userRepository.save(candidacy.getUser());
 
-                }
-                else   candidacy.setStatus(status.Refused);
-                       userRepository.save(candidacy.getUser());
+                } else candidacy.setStatus(status.Refused);
+                userRepository.save(candidacy.getUser());
             }
         }
 
 
         return topNCandidatures;
     }
+
     public void sendSelectedCandidatesEmails(Integer opportunityId) {
         List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
 
@@ -301,8 +305,9 @@ opportunityRepository.deleteById(id);
             javaMailSender.send(message);
         }
 
-}
-    public void sendSelectedCandidatesEmailsTest(Integer opportunityId)  throws MessagingException, IOException{
+    }
+
+    public void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException {
         List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
 
         for (Condidacy candidate : selectedCandidates) {
@@ -316,8 +321,8 @@ opportunityRepository.deleteById(id);
             String htmlContent = "<html><body>"
                     + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
                     + "<p>Congratulations! You have been selected for the following opportunity:</p>"
-                    + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() +  "</h1>"
-                    + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() +  "</h2>"
+                    + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() + "</h1>"
+                    + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() + "</h2>"
                     + "<p>Please contact the opportunity provider for further details.</p>"
                     + "<img src='cid:image'>"
                     + "<p>Best regards,<br>Your Application Team</p>"
@@ -332,6 +337,56 @@ opportunityRepository.deleteById(id);
             helper.addInline("image", imageDataSource);
 
             javaMailSender.send(message);
-        }}
-
         }
+    }
+
+    public void sendOpportunitySelectionEmailsOnDeadline(Integer opportunityId) {
+        Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
+        if (opportunity == null) {
+            return;
+        }
+        LocalDate deadline = opportunity.getEndDate();
+        if (deadline == null) {
+            return;
+        }
+        LocalDateTime midnightDeadline = deadline.atTime(LocalTime.MIDNIGHT);
+        Date date = Date.from(midnightDeadline.atZone(ZoneId.systemDefault()).toInstant());
+
+        List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
+
+        for (Condidacy candidate : selectedCandidates) {
+            try {
+                MimeMessage message = javaMailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+                helper.setTo(candidate.getUser().getEmail());
+                helper.setSubject("Opportunity selection");
+
+                // Set the HTML content of the email
+                String htmlContent = "<html><body>"
+                        + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
+                        + "<p>Congratulations! You have been selected for the following opportunity:</p>"
+                        + "<h1>" + opportunity.getTitle() + "</h1>"
+                        + "<h2>" + opportunity.getCreatedBy().getUserName() + "</h2>"
+                        + "<p>Please contact the opportunity provider for further details.</p>"
+                        + "<img src='cid:image'>"
+                        + "<p>Best regards,<br>Your Application Team</p>"
+                        + "</body></html>";
+
+                helper.setText(htmlContent, true);
+
+                // Add an image as an attachment
+                ClassPathResource imageResource = new ClassPathResource("img.png");
+                InputStream inputStream = imageResource.getInputStream();
+                DataSource imageDataSource = new ByteArrayDataSource(inputStream, "image/png");
+                helper.addInline("image", imageDataSource);
+
+                javaMailSender.send(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+}

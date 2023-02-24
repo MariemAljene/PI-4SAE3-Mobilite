@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -17,8 +19,15 @@ public class Question implements Serializable {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Integer IdQuestion ;
-    private String Question ;
-    private Type Type ;
+    private String content;
+    @Enumerated(EnumType.STRING)
+    private Speciality specialty;
+
+    @ManyToOne
+    private Quiz quiz;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    private List<Answer> answers;
 
    
 

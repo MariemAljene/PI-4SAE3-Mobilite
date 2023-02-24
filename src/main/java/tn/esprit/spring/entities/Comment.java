@@ -14,7 +14,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class Comment implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idComment;
     private String content;
     private Date publishDate;
@@ -22,7 +22,6 @@ public class Comment implements Serializable {
 
     @ManyToOne
     private Post post;
-
 
 
 }

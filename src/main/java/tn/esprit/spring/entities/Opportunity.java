@@ -41,6 +41,8 @@ public class Opportunity   implements Serializable {
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
+    @OneToMany(mappedBy = "opportunity", cascade = CascadeType.ALL)
+    private List<Quiz> quizzes;
 
 
 }
