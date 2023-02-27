@@ -17,33 +17,21 @@ import java.util.List;
 @AllArgsConstructor
 public class Question implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer IdQuestion ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer IdQuestion;
     private String content;
     @Enumerated(EnumType.STRING)
     private Speciality specialty;
 
     @ManyToOne
     private Quiz quiz;
-
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<Answer> answers;
-
-   
-
-
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "userQ")
-
     private User userQ;
-
-
-
-
-
-
 
 
 }

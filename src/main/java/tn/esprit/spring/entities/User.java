@@ -83,33 +83,33 @@ public class User {
     public void setRole(Set<Role> role) {
         this.role = role;
     }
-@JsonIgnore
+
+    @JsonIgnore
     @OneToMany(mappedBy = "createdBy")
     private List<Opportunity> opportunities = new ArrayList<>();
-@JsonIgnore
+    @JsonIgnore
 
     @OneToMany(mappedBy = "user")
     private List<Condidacy> candidacies = new ArrayList<>();
- @JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "participant", cascade = CascadeType.ALL)
     public List<Participant> roomsList;
-    @OneToMany(mappedBy="rdv", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "rdv", cascade = CascadeType.ALL)
     @JsonIgnore
     @ToString.Exclude
-    private List<Appointement> Appointements ;
+    private List<Appointement> Appointements;
     @JsonIgnore
-    @OneToMany( cascade = CascadeType.ALL)
-    private  List<Rating> ratingList;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Rating> ratingList;
     @JsonIgnore
-    @OneToMany( cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Post> postList;
     @JsonIgnore
-    @OneToMany( cascade = CascadeType.ALL)
-    private  List<Comment> commentList;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Comment> commentList;
     @JsonIgnore
     @OneToMany(mappedBy = "userQ")
     private List<Question> questions = new ArrayList<>();
-
 
 
     @JsonIgnore

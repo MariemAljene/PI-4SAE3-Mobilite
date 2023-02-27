@@ -49,9 +49,9 @@ public interface Pi_Mobility {
     ///Quiz
     Quiz saveQuiz(Quiz quiz);
 
-    Quiz getQuizById(Long id);
+    Quiz getQuizById(Integer id);
 
-    void deleteQuizById(Long id);
+    void deleteQuizById(Integer id);
 
     //Question
     Question saveQuestion(Question question);
@@ -65,5 +65,25 @@ public interface Pi_Mobility {
    Answer saveAnswer(Answer answer);
     Answer getAnswerById(Long id);
     void deleteAnswerById(Long id);
+    // Quiz attempt related methods
+    QuizAttempt saveQuizAttempt(QuizAttempt quizAttempt);
+    QuizAttempt getQuizAttemptById(Integer id);
+    List<QuizAttempt> getAllQuizAttempts();
+    void deleteQuizAttemptById(Integer id);
+    // Answer attempt related methods
+    AnswerAttempt saveAnswerAttempt(AnswerAttempt answerAttempt);
+    AnswerAttempt getAnswerAttemptById(Integer id);
+    List<AnswerAttempt> getAllAnswerAttempts();
+    void deleteAnswerAttemptById(Integer id);
+    // Add QuizWithQA
+   void  ajouterQuizAvecQuestionsEtReponses(Quiz quiz);
+    public void ajouterQuestion(Question question, Integer quizId) ;
+    public void ajouterReponse(Integer questionId,Answer reponse) ;
+    public void ajouterQuiz(Quiz quiz) ;
 
-}
+
+
+
+
+
+    }

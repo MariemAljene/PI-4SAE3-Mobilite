@@ -7,12 +7,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StreamUtils;
 import org.webjars.NotFoundException;
-import tn.esprit.spring.entities.Condidacy;
-import tn.esprit.spring.entities.Opportunity;
-import tn.esprit.spring.entities.User;
-import tn.esprit.spring.entities.status;
+import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
 
@@ -20,6 +18,8 @@ import javax.activation.DataSource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.*;
@@ -97,17 +97,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
     @Override
     public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int ID_Opportuinity) {
-        List<Condidacy> FindingCandidacy = new ArrayList<>();
 
-        for (Condidacy condidacy1 : condidacyRepository.findAll()) {
-            if (condidacy1.getOpportunity().getId_Opportunity() == ID_Opportuinity && condidacy1.getUser().getUserName().equals(Id_Student)) {
-                FindingCandidacy.add(condidacy1);
-            }
-
-        }
-        if (FindingCandidacy != null) {
-            throw new RuntimeException("Student has already applied for this opportunity");
-        }
 
         condidacy.setStatus(status.In_Progress);
         User user = userRepository.findById(Id_Student).orElse(null);
@@ -340,6 +330,120 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         }
     }
 
+    @Override
+    public Quiz saveQuiz(Quiz quiz) {
+        return quizRepository.save(quiz);
+    }
+
+    @Override
+    public Quiz getQuizById(Integer id) {
+        return quizRepository.findById(id).orElse(null) ;
+    }
+
+    @Override
+    public void deleteQuizById(Integer id) {
+        quizRepository.deleteById(id);
+
+    }
+
+    @Override
+    public Question saveQuestion(Question question) {
+        return null;
+    }
+
+    @Override
+    public Question getQuestionById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public List<Question> getQuestionBySpeciality(Speciality speciality) {
+        return null;
+    }
+
+    @Override
+    public void deleteQuestionById(Integer id) {
+
+    }
+
+    @Override
+    public Answer saveAnswer(Answer answer) {
+        return null;
+    }
+
+    @Override
+    public Answer getAnswerById(Long id) {
+        return null;
+    }
+
+    @Override
+    public void deleteAnswerById(Long id) {
+
+    }
+
+    @Override
+    public QuizAttempt saveQuizAttempt(QuizAttempt quizAttempt) {
+        return null;
+    }
+
+    @Override
+    public QuizAttempt getQuizAttemptById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public List<QuizAttempt> getAllQuizAttempts() {
+        return null;
+    }
+
+    @Override
+    public void deleteQuizAttemptById(Integer id) {
+
+    }
+
+    @Override
+    public AnswerAttempt saveAnswerAttempt(AnswerAttempt answerAttempt) {
+        return null;
+    }
+
+    @Override
+    public AnswerAttempt getAnswerAttemptById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public List<AnswerAttempt> getAllAnswerAttempts() {
+        return null;
+    }
+
+    @Override
+    public void deleteAnswerAttemptById(Integer id) {
+
+    }
+
+    @Override
+    public void ajouterQuizAvecQuestionsEtReponses(Quiz quiz) {
+
+    }
+    @Transactional
+
+    @Override
+    public void ajouterQuestion(Question question, Integer quizId) {
+        Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new IllegalArgumentException("Le quiz avec l'ID " + quizId + " n'existe pas."));
+        question.setQuiz(quiz);
+        questionRepository.save(question);
+
+    }
+    @Transactional
+
+    @Override
+    public void ajouterReponse(Integer questionId, Answer reponse) {
+        Question question = questionRepository.findById(questionId).orElseThrow(() -> new IllegalArgumentException("La question avec l'ID " + questionId + " n'existe pas."));
+        reponse.setQuestion(question);
+        answerRepository.save(reponse);
+
+    }
+
     public void sendOpportunitySelectionEmailsOnDeadline(Integer opportunityId) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
         if (opportunity == null) {
@@ -387,6 +491,90 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
             }
         }
     }
+   /* public void ajouterQuizAvecQuestionsEtReponses(Quiz quiz) {
+        // Enregistrer le quiz
+        Quiz savedQuiz = quizRepository.save(quiz);
+
+        // Ajouter les questions au quiz
+        for (Question question : quiz.getQuestions()) {
+            question.setQuiz(savedQuiz);
+            Question savedQuestion = questionRepository.save(question);
+
+            // Ajouter les réponses à la question
+            for (Answer reponse : question.getAnswers()) {
+                reponse.setQuestion(savedQuestion);
+                answerRepository.save(reponse);
+            }
+        }
+    }
+*/
+
+    @PersistenceContext
+    private EntityManager entityManager;
+    @Transactional
+    public void ajouterQuiz(Quiz quiz) {
+        Quiz savedQuiz = quizRepository.save(quiz);
+
+        // Pour chaque question dans le quiz
+        for(Question question : quiz.getQuestions()) {
+            // Associer la question avec le quiz
+            question.setQuiz(savedQuiz);
+
+            // Sauvegarder la question pour générer l'ID
+            Question savedQuestion = questionRepository.save(question);
+
+            // Pour chaque réponse dans la question
+            for (Answer answer : question.getAnswers()) {
+                // Associer la réponse avec la question
+                answer.setQuestion(savedQuestion);
+
+                // Sauvegarder la réponse pour générer l'ID
+                answerRepository.save(answer);
+            }
 
 
+        }}
+
+    public QuizAttempt startQuizAttempt(Condidacy candidacy, Integer quizId) {
+        Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new RuntimeException("Quiz not found"));
+        QuizAttempt quizAttempt = new QuizAttempt();
+        quizAttempt.setCondidacy(candidacy);
+        quizAttempt.setQuiz(quiz);
+        quizAttemptRepository.save(quizAttempt);
+        return quizAttempt;
+    }
+
+    public void submitAnswerAttempt(Integer quizAttemptId, Integer questionId, Integer answerId) {
+        QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId)
+                .orElseThrow(() -> new RuntimeException("Quiz Attempt not found"));
+        Question question = quizAttempt.getQuiz().getQuestions().stream()
+                .filter(q -> q.getIdQuestion().equals(questionId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Question not found in the quiz"));
+
+        Answer answer = question.getAnswers().stream()
+                .filter(a -> a.getId_Answer().equals(answerId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Answer not found for the question"));
+
+        AnswerAttempt answerAttempt = new AnswerAttempt();
+        answerAttempt.setAnswer(answer);
+        answerAttempt.setQuizAttempt(quizAttempt);
+        answerAttemptRepository.save(answerAttempt);
+    }
+
+    public int finishQuizAttempt(Integer quizAttemptId) {
+        QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId)
+                .orElseThrow(() -> new RuntimeException("Quiz Attempt not found"));
+
+        int score = quizAttempt.getAnswerAttempts().stream()
+                .filter(a -> a.getAnswer().isCorrect())
+                .mapToInt(a -> 1)
+                .sum();
+
+        quizAttempt.setScore(score);
+        quizAttemptRepository.save(quizAttempt);
+
+        return score;
+    }
 }
