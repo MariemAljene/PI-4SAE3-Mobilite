@@ -3,13 +3,12 @@ package tn.esprit.spring.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
-import org.webjars.NotFoundException;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
@@ -19,16 +18,12 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.*;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -393,7 +388,12 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     @Override
     public void ajouterQuestion(Question question, Integer quizId) {
         Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new IllegalArgumentException("Le quiz avec l'ID " + quizId + " n'existe pas."));
-        question.setQuiz(quiz);
+        // Ajouter la question au quiz
+        quiz.getQuestions().add(question);
+
+        // Ajouter le quiz à la question
+        question.getQuizzes().add(quiz);
+
         questionRepository.save(question);
 
     }
@@ -407,6 +407,36 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         answerRepository.save(reponse);
 
     }
+
+    @Override
+    public void ajouterQuiz(Quiz quiz, Integer OpportunityId) {
+
+    }
+
+    @Transactional
+    public void ajouterAnswer(Answer answer, Integer questionId) {
+        // Récupérer la question correspondante en base de données
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new EntityNotFoundException("Question introuvable avec l'id " + questionId));
+
+        // Associer la réponse à la question
+        answer.setQuestion(question);
+
+        // Enregistrer la réponse en base de données
+        answerRepository.save(answer);
+    }
+
+
+    public ResponseEntity<Question> getQuestionById(Integer questionId) {
+
+        Optional<Question> question = Optional.ofNullable(questionRepository.findById(questionId).orElse(null));
+        if (question.isPresent()) {
+            return ResponseEntity.ok().body(question.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     public void sendOpportunitySelectionEmailsOnDeadline(Integer opportunityId) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
@@ -477,30 +507,20 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     private EntityManager entityManager;
 
     @Transactional
-    public void ajouterQuiz(Quiz quiz, Integer Id_Opportunity) {
+    public void ajouterQuiz(Quiz quiz, List<Question> questions, Integer Id_Opportunity) {
         Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
-        Quiz savedQuiz = quizRepository.save(quiz);
-        savedQuiz.setOpportunity(opportunity);
-        // Pour chaque question dans le quiz
-        for (Question question : quiz.getQuestions()) {
-            // Associer la question avec le quiz
-            question.setQuiz(savedQuiz);
 
-            // Sauvegarder la question pour générer l'ID
-            Question savedQuestion = questionRepository.save(question);
-
-            // Pour chaque réponse dans la question
-            for (Answer answer : question.getAnswers()) {
-                // Associer la réponse avec la question
-                answer.setQuestion(savedQuestion);
-
-                // Sauvegarder la réponse pour générer l'ID
-                answerRepository.save(answer);
-            }
-
-
+        for (Question question : questions) {
+            question.getQuizzes().add(quiz);
         }
+
+        quiz.setOpportunity(opportunity);
+        quiz.setQuestions((Set<Question>) questions);
+
+        quizRepository.save(quiz);
     }
+
+
 
     public QuizAttempt startQuizAttempt(Condidacy candidacy, Integer quizId) {
         Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new RuntimeException("Quiz not found"));

@@ -8,8 +8,7 @@ import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/Pi_Mobility")
@@ -153,7 +152,7 @@ public class ExamenRestController {
     @Autowired
     CondidacyRepository condidacyRepository;
 
-    @PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
+    /*@PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
     public ResponseEntity<String> SENDMail(@PathVariable int id_Opportunity) {
         int n = 0;
         List<Condidacy> condidacy = condidacyRepository.findAll();
@@ -168,7 +167,7 @@ public class ExamenRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
         }
-    }
+    }*/
     @Autowired
     OpportunityRepository opportunityRepository;
 
@@ -189,21 +188,44 @@ public class ExamenRestController {
         }
     }
 
-    @PostMapping("Quiz/add")
+ /*   @PostMapping("Quiz/addQuizWith")
     public ResponseEntity<String> addQuizWithQuestionsAndAnswers(@RequestBody Quiz quiz) {
       pi_mobility.ajouterQuizAvecQuestionsEtReponses(quiz);
         return ResponseEntity.ok("addedQuiz");
-    }
+    }*/
 
-    @PostMapping("/Quiz/AddQuiz/{Id_Opportunity}")
-    public ResponseEntity<?> ajouterQuiz(@RequestBody Quiz quiz,@PathVariable Integer Id_Opportunity) {
-        pi_mobility.ajouterQuiz(quiz,Id_Opportunity);
+
+    @PostMapping("/Quiz/AddQuizQuestionAndResponse/{questionIds}/{Id_Opportunity}")
+    public ResponseEntity<?> ajouterQuiz(@RequestBody Quiz quiz, @PathVariable List<Integer> questionIds, @PathVariable Integer Id_Opportunity) {
+        HashSet<Question> questions = new HashSet<>();
+        for (Integer questionId : questionIds) {
+
+           {
+               Question question=questionRepository.findById(questionId).orElse(null);
+               questionRepository.save(question);
+
+               questions.add(question);
+           }
+        }
+        quiz.setQuestions((Set<Question>) questions);
+quiz.setQuestions(questions);
+        pi_mobility.ajouterQuiz(quiz, Id_Opportunity);
+        quizRepository.save(quiz);
+
         return ResponseEntity.ok().build();
     }
+@Autowired
+QuestionRepository questionRepository;
+    @Autowired
+    QuizRepository quizRepository;
 
     @PostMapping("/{idQuiz}/question")
-    public ResponseEntity<?> ajouterQuestionAuQuiz(@PathVariable Integer idQuiz, @RequestBody Question question) {
-        pi_mobility.ajouterQuestion(question, idQuiz);
+    public ResponseEntity<?> ajouterQuestionAuQuiz( @RequestBody Question question) {
+        for(Answer answer: question.getAnswers())
+        {
+            answer.setQuestion(question);
+        }
+       questionRepository.save(question);
         return ResponseEntity.ok().build();
     }
 
@@ -212,7 +234,7 @@ public class ExamenRestController {
         pi_mobility.ajouterReponse( idQuestion,reponse);
         return ResponseEntity.ok().build();
     }
-    @PostMapping("/start")
+    @PostMapping("/startQuiz    ")
     public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt) {
         QuizAttempt savedQuizAttempt = quizAttemptRepository.save(quizAttempt);
         return ResponseEntity.ok("QuizAttempt started with id: " + savedQuizAttempt.getIdQuizAttempt());
@@ -245,7 +267,5 @@ public class ExamenRestController {
         }
         return score;
     }
-
 }
-
 

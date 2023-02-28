@@ -8,7 +8,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -23,8 +25,9 @@ public class Question implements Serializable {
     @Enumerated(EnumType.STRING)
     private Speciality specialty;
 @JsonIgnore
-    @ManyToOne
-    private Quiz quiz;
+
+@ManyToMany(mappedBy = "questions")
+private Set<Quiz> quizzes = new HashSet<>();
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<Answer> answers;
 
@@ -32,6 +35,9 @@ public class Question implements Serializable {
     @ManyToOne
     @JoinColumn(name = "userQ")
     private User userQ;
+    public Question(String content) {
+        this.content = content;
+    }
 
 
 }

@@ -10,7 +10,9 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -28,16 +30,22 @@ public class Quiz implements Serializable {
     @OneToOne
     private Opportunity opportunity;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
-    private List<Question> questions;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "quiz_question",
+            joinColumns = { @JoinColumn(name = "quiz_id") },
+            inverseJoinColumns = { @JoinColumn(name = "question_id") }
+    )
+    private Set<Question> questions = new HashSet<>();
+
 
     private LocalDate startDate;
+    private  int nbQuestion;
     private LocalDate endDate;
     public Quiz(String title, String description, Opportunity opportunity, List<Question> questions, LocalDate startDate, LocalDate endDate) {
         this.title = title;
         this.description = description;
         this.opportunity = opportunity;
-        this.questions = questions;
         this.startDate = startDate;
         this.endDate = endDate;
     }

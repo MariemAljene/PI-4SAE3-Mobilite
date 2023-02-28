@@ -1,5 +1,6 @@
 package tn.esprit.spring.interfaces;
 
+import org.springframework.http.ResponseEntity;
 import tn.esprit.spring.entities.*;
 
 import javax.mail.MessagingException;
@@ -50,6 +51,8 @@ public interface Pi_Mobility {
     public void ajouterQuestion(Question question, Integer quizId) ;
     public void ajouterReponse(Integer questionId,Answer reponse) ;
     public void ajouterQuiz(Quiz quiz,Integer OpportunityId) ;
+    void ajouterAnswer(Answer answer, Integer questionId);
+   // ResponseEntity<Question> getQuestionById(Integer questionId);
 
 
 
