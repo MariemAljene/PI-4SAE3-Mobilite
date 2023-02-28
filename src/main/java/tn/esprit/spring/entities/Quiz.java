@@ -24,11 +24,9 @@ public class Quiz implements Serializable {
 
     private String title;
     private String description;
-    @JsonIgnore
-
-    @ManyToOne
+@JsonIgnore
+    @OneToOne
     private Opportunity opportunity;
-    @JsonIgnore
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
     private List<Question> questions;

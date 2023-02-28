@@ -46,40 +46,10 @@ public interface Pi_Mobility {
 
     void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException;
 
-    ///Quiz
-    Quiz saveQuiz(Quiz quiz);
-
-    Quiz getQuizById(Integer id);
-
-    void deleteQuizById(Integer id);
-
-    //Question
-    Question saveQuestion(Question question);
-
-    Question getQuestionById(Integer id);
-
-    List<Question> getQuestionBySpeciality(Speciality speciality);
-
-    void deleteQuestionById(Integer id);
- ////Answer
-   Answer saveAnswer(Answer answer);
-    Answer getAnswerById(Long id);
-    void deleteAnswerById(Long id);
-    // Quiz attempt related methods
-    QuizAttempt saveQuizAttempt(QuizAttempt quizAttempt);
-    QuizAttempt getQuizAttemptById(Integer id);
-    List<QuizAttempt> getAllQuizAttempts();
-    void deleteQuizAttemptById(Integer id);
-    // Answer attempt related methods
-    AnswerAttempt saveAnswerAttempt(AnswerAttempt answerAttempt);
-    AnswerAttempt getAnswerAttemptById(Integer id);
-    List<AnswerAttempt> getAllAnswerAttempts();
-    void deleteAnswerAttemptById(Integer id);
-    // Add QuizWithQA
    void  ajouterQuizAvecQuestionsEtReponses(Quiz quiz);
     public void ajouterQuestion(Question question, Integer quizId) ;
     public void ajouterReponse(Integer questionId,Answer reponse) ;
-    public void ajouterQuiz(Quiz quiz) ;
+    public void ajouterQuiz(Quiz quiz,Integer OpportunityId) ;
 
 
 

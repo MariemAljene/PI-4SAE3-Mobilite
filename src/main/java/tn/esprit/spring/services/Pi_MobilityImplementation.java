@@ -239,10 +239,9 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     public List<Condidacy> getTopNCandidatures(Integer opportunityId) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
         int n = opportunity.getCapacity();
-        // Trier les candidatures par score en utilisant la méthode que vous avez implémentée
         List<Condidacy> CondidacyTOP = trierEtudiantsParScore(opportunityId);
-        // Récupérer les n candidatures avec les scores les plus élevés
         List<Condidacy> topNCandidatures = new ArrayList<>();
+        List<Condidacy> ListeAttente=new ArrayList<>();
         if (opportunity.getNeeds() == 0) {
             for (int i = 0; i < n && i < CondidacyTOP.size(); i++) {
                 topNCandidatures.add(CondidacyTOP.get(i));
@@ -270,6 +269,24 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
 
         return topNCandidatures;
+    }
+    public List<Condidacy> GetListeAttente(Integer opportunityId) {
+        Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
+        int n = opportunity.getCapacity();
+        List<Condidacy> CondidacyTOP = trierEtudiantsParScore(opportunityId);
+        List<Condidacy> ListeAttente=new ArrayList<>();
+
+            for (int i = n; i < n+n && i < CondidacyTOP.size(); i++) {
+                ListeAttente.add(CondidacyTOP.get(i));
+                CondidacyTOP.get(i).setStatus(status.Pre_Selected);
+                userRepository.save(CondidacyTOP.get(i).getUser());
+
+
+            }
+
+
+
+        return ListeAttente;
     }
 
     public void sendSelectedCandidatesEmails(Integer opportunityId) {
@@ -299,13 +316,15 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
     public void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException {
         List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
+        //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
+        List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
 
         for (Condidacy candidate : selectedCandidates) {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(candidate.getUser().getEmail());
-            helper.setSubject("Opportunity selection");
+            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
 
             // Set the HTML content of the email
             String htmlContent = "<html><body>"
@@ -313,6 +332,39 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
                     + "<p>Congratulations! You have been selected for the following opportunity:</p>"
                     + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() + "</h1>"
                     + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() + "</h2>"
+                    + "<p> A quiz will be available on the platform </p>" + opportunityRepository.findById(opportunityId).get().getQuizzesQuiz().getStartDate() + "</p>"
+                    + "<p>Until  </p>" + opportunityRepository.findById(opportunityId).get().getQuizzesQuiz().getEndDate() + "</p>"
+                    + "<p>Please contact the opportunity provider for further details.</p>"
+                    + "<img src='cid:image'>"
+                    + "<p>Best regards,<br>Your Application Team</p>"
+                    + "</body></html>";
+
+            helper.setText(htmlContent, true);
+
+            // Add an image as an attachment
+            ClassPathResource imageResource = new ClassPathResource("img.png");
+            InputStream inputStream = imageResource.getInputStream();
+            DataSource imageDataSource = new ByteArrayDataSource(inputStream, "image/png");
+            helper.addInline("image", imageDataSource);
+
+            javaMailSender.send(message);
+        }
+        ///Liste attente
+        for (Condidacy candidate : ListeAttente) {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(candidate.getUser().getEmail());
+            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
+
+            // Set the HTML content of the email
+            String htmlContent = "<html><body>"
+                    + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
+                    + "<p>You are in a temporary list of :</p>"
+                    + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() + "</h1>"
+                    + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() + "</h2>"
+                    + "<p>You can Be called a tout moment.</p>"
+
                     + "<p>Please contact the opportunity provider for further details.</p>"
                     + "<img src='cid:image'>"
                     + "<p>Best regards,<br>Your Application Team</p>"
@@ -330,101 +382,12 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         }
     }
 
-    @Override
-    public Quiz saveQuiz(Quiz quiz) {
-        return quizRepository.save(quiz);
-    }
-
-    @Override
-    public Quiz getQuizById(Integer id) {
-        return quizRepository.findById(id).orElse(null) ;
-    }
-
-    @Override
-    public void deleteQuizById(Integer id) {
-        quizRepository.deleteById(id);
-
-    }
-
-    @Override
-    public Question saveQuestion(Question question) {
-        return null;
-    }
-
-    @Override
-    public Question getQuestionById(Integer id) {
-        return null;
-    }
-
-    @Override
-    public List<Question> getQuestionBySpeciality(Speciality speciality) {
-        return null;
-    }
-
-    @Override
-    public void deleteQuestionById(Integer id) {
-
-    }
-
-    @Override
-    public Answer saveAnswer(Answer answer) {
-        return null;
-    }
-
-    @Override
-    public Answer getAnswerById(Long id) {
-        return null;
-    }
-
-    @Override
-    public void deleteAnswerById(Long id) {
-
-    }
-
-    @Override
-    public QuizAttempt saveQuizAttempt(QuizAttempt quizAttempt) {
-        return null;
-    }
-
-    @Override
-    public QuizAttempt getQuizAttemptById(Integer id) {
-        return null;
-    }
-
-    @Override
-    public List<QuizAttempt> getAllQuizAttempts() {
-        return null;
-    }
-
-    @Override
-    public void deleteQuizAttemptById(Integer id) {
-
-    }
-
-    @Override
-    public AnswerAttempt saveAnswerAttempt(AnswerAttempt answerAttempt) {
-        return null;
-    }
-
-    @Override
-    public AnswerAttempt getAnswerAttemptById(Integer id) {
-        return null;
-    }
-
-    @Override
-    public List<AnswerAttempt> getAllAnswerAttempts() {
-        return null;
-    }
-
-    @Override
-    public void deleteAnswerAttemptById(Integer id) {
-
-    }
 
     @Override
     public void ajouterQuizAvecQuestionsEtReponses(Quiz quiz) {
 
     }
+
     @Transactional
 
     @Override
@@ -434,6 +397,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         questionRepository.save(question);
 
     }
+
     @Transactional
 
     @Override
@@ -511,12 +475,14 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
     @PersistenceContext
     private EntityManager entityManager;
-    @Transactional
-    public void ajouterQuiz(Quiz quiz) {
-        Quiz savedQuiz = quizRepository.save(quiz);
 
+    @Transactional
+    public void ajouterQuiz(Quiz quiz, Integer Id_Opportunity) {
+        Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
+        Quiz savedQuiz = quizRepository.save(quiz);
+        savedQuiz.setOpportunity(opportunity);
         // Pour chaque question dans le quiz
-        for(Question question : quiz.getQuestions()) {
+        for (Question question : quiz.getQuestions()) {
             // Associer la question avec le quiz
             question.setQuiz(savedQuiz);
 
@@ -533,7 +499,8 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
             }
 
 
-        }}
+        }
+    }
 
     public QuizAttempt startQuizAttempt(Condidacy candidacy, Integer quizId) {
         Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new RuntimeException("Quiz not found"));

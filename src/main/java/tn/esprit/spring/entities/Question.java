@@ -22,7 +22,7 @@ public class Question implements Serializable {
     private String content;
     @Enumerated(EnumType.STRING)
     private Speciality specialty;
-
+@JsonIgnore
     @ManyToOne
     private Quiz quiz;
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
