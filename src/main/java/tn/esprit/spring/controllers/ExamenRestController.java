@@ -234,38 +234,62 @@ QuestionRepository questionRepository;
         pi_mobility.ajouterReponse( idQuestion,reponse);
         return ResponseEntity.ok().build();
     }
-    @PostMapping("/startQuiz    ")
-    public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt) {
+    @PostMapping("/startQuiz/{id_Quiz}/{id_Condidacy}")
+    public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt,@PathVariable Integer id_Quiz,@PathVariable Integer id_Condidacy ) {
         QuizAttempt savedQuizAttempt = quizAttemptRepository.save(quizAttempt);
+        Quiz quiz=quizRepository.findById(id_Quiz).orElse(null);
+        Condidacy condidacy=condidacyRepository.findById(id_Condidacy).orElse(null);
+        savedQuizAttempt.setCondidacy(condidacy);
+        savedQuizAttempt.getCondidacy().setId_Condidacy(id_Condidacy);
+        savedQuizAttempt.setQuiz(quiz);
+        quizRepository.save(quiz);
+        //savedQuizAttempt.getCondidacy().setAttempted(true);
         return ResponseEntity.ok("QuizAttempt started with id: " + savedQuizAttempt.getIdQuizAttempt());
     }
 
-    @PostMapping("/{quizAttemptId}/answer")
-    public ResponseEntity<String> answerQuestion(@PathVariable Integer quizAttemptId,
-                                                 @RequestBody AnswerAttempt answerAttempt) {
-        QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
 
+    @PostMapping("/{quizAttemptId}/answer/{id_answer}")
+    public ResponseEntity<String> answerQuestion(@PathVariable Integer quizAttemptId,
+                                                 @RequestBody AnswerAttempt answerAttempt,
+                                                 @PathVariable Integer id_answer) {
+        QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
+Answer answer=answerRepository.findById(id_answer).orElse(null);
+answerAttempt.setAnswer(answer);
         answerAttempt.setQuizAttempt(quizAttempt);
         answerAttemptRepository.save(answerAttempt);
         return ResponseEntity.ok("Answer saved successfully for QuizAttempt with id: " + quizAttemptId);
     }
-
+@Autowired
+ AnswerRepository answerRepository;
     @GetMapping("/{quizAttemptId}/submit")
     public ResponseEntity<String> submitQuizAttempt(@PathVariable Integer quizAttemptId) {
         QuizAttempt quizAttempt = quizAttemptRepository.getById(quizAttemptId);
-        quizAttempt.setScore(calculateScore(quizAttempt));
+        float i=calculateScore(quizAttempt,quizAttempt.getCondidacy().getId_Condidacy());
+        quizAttempt.setScore(calculateScore(quizAttempt,quizAttempt.getCondidacy().getId_Condidacy()));
+        System.out.println(i);
+        quizAttempt.getCondidacy().setAttempted(true);
         quizAttemptRepository.save(quizAttempt);
         return ResponseEntity.ok("QuizAttempt with id: " + quizAttemptId + " submitted successfully with score: " + quizAttempt.getScore());
     }
 
-    private int calculateScore(QuizAttempt quizAttempt) {
+    private float calculateScore(QuizAttempt quizAttempt,int id_condidacy) {
+       List<Quiz>  quizzes=quizRepository.findAll();
+       Quiz quiz=quizAttempt.getQuiz();
         int score = 0;
-        for (AnswerAttempt answerAttempt : quizAttempt.getAnswerAttempts()) {
-            if (answerAttempt.getAnswer().isCorrect()) {
-                score++;
+        Condidacy condidacy=condidacyRepository.findById(id_condidacy).orElse(null);
+        if (condidacy.getId_Condidacy()==quizAttempt.getCondidacy().getId_Condidacy())
+        {
+
+            for (AnswerAttempt answerAttempt : quizAttempt.getAnswerAttempts()) {
+                if (answerAttempt.getAnswer().isCorrect()) {
+                    score+=answerAttempt.getAnswer().getQuestion().getPoint();
+                }
             }
         }
-        return score;
+
+
+        return score/quiz.getNbQuestion();
+
     }
 }
 

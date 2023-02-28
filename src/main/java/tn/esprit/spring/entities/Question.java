@@ -30,6 +30,7 @@ public class Question implements Serializable {
 private Set<Quiz> quizzes = new HashSet<>();
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<Answer> answers;
+    private  int Point;
 
     @JsonIgnore
     @ManyToOne

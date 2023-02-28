@@ -20,17 +20,18 @@ public class QuizAttempt implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idQuizAttempt;
     @JsonIgnore
-
     @OneToOne
     private Condidacy condidacy;
-
+    @JsonIgnore
     @OneToOne
     private Quiz quiz;
 
     @OneToMany(mappedBy = "quizAttempt", cascade = CascadeType.ALL)
     private List<AnswerAttempt> answerAttempts;
 
-    private int score;
+    private float score;
 
     // getters and setters
+
+
 }
