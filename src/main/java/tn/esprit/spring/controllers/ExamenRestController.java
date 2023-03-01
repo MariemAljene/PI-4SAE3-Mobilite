@@ -200,45 +200,46 @@ public class ExamenRestController {
         HashSet<Question> questions = new HashSet<>();
         for (Integer questionId : questionIds) {
 
-           {
-               Question question=questionRepository.findById(questionId).orElse(null);
-               questionRepository.save(question);
+            {
+                Question question = questionRepository.findById(questionId).orElse(null);
+                questionRepository.save(question);
 
-               questions.add(question);
-           }
+                questions.add(question);
+            }
         }
         quiz.setQuestions((Set<Question>) questions);
-quiz.setQuestions(questions);
+        quiz.setQuestions(questions);
         pi_mobility.ajouterQuiz(quiz, Id_Opportunity);
         quizRepository.save(quiz);
 
         return ResponseEntity.ok().build();
     }
-@Autowired
-QuestionRepository questionRepository;
+
+    @Autowired
+    QuestionRepository questionRepository;
     @Autowired
     QuizRepository quizRepository;
 
     @PostMapping("/{idQuiz}/question")
-    public ResponseEntity<?> ajouterQuestionAuQuiz( @RequestBody Question question) {
-        for(Answer answer: question.getAnswers())
-        {
+    public ResponseEntity<?> ajouterQuestionAuQuiz(@RequestBody Question question) {
+        for (Answer answer : question.getAnswers()) {
             answer.setQuestion(question);
         }
-       questionRepository.save(question);
+        questionRepository.save(question);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/question/{idQuestion}/reponse")
     public ResponseEntity<?> ajouterReponseALaQuestion(@PathVariable Integer idQuestion, @RequestBody Answer reponse) {
-        pi_mobility.ajouterReponse( idQuestion,reponse);
+        pi_mobility.ajouterReponse(idQuestion, reponse);
         return ResponseEntity.ok().build();
     }
+
     @PostMapping("/startQuiz/{id_Quiz}/{id_Condidacy}")
-    public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt,@PathVariable Integer id_Quiz,@PathVariable Integer id_Condidacy ) {
+    public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt, @PathVariable Integer id_Quiz, @PathVariable Integer id_Condidacy) {
         QuizAttempt savedQuizAttempt = quizAttemptRepository.save(quizAttempt);
-        Quiz quiz=quizRepository.findById(id_Quiz).orElse(null);
-        Condidacy condidacy=condidacyRepository.findById(id_Condidacy).orElse(null);
+        Quiz quiz = quizRepository.findById(id_Quiz).orElse(null);
+        Condidacy condidacy = condidacyRepository.findById(id_Condidacy).orElse(null);
         savedQuizAttempt.setCondidacy(condidacy);
         savedQuizAttempt.getCondidacy().setId_Condidacy(id_Condidacy);
         savedQuizAttempt.setQuiz(quiz);
@@ -249,46 +250,47 @@ QuestionRepository questionRepository;
 
 
     @PostMapping("/{quizAttemptId}/answer/{id_answer}")
-    public ResponseEntity<String> answerQuestion(@PathVariable Integer quizAttemptId,
-                                                 @RequestBody AnswerAttempt answerAttempt,
-                                                 @PathVariable Integer id_answer) {
+    public ResponseEntity<String> answerQuestion(@PathVariable Integer quizAttemptId, @RequestBody AnswerAttempt answerAttempt, @PathVariable Integer id_answer) {
         QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
-Answer answer=answerRepository.findById(id_answer).orElse(null);
-answerAttempt.setAnswer(answer);
+        Answer answer = answerRepository.findById(id_answer).orElse(null);
+        answerAttempt.setAnswer(answer);
         answerAttempt.setQuizAttempt(quizAttempt);
         answerAttemptRepository.save(answerAttempt);
         return ResponseEntity.ok("Answer saved successfully for QuizAttempt with id: " + quizAttemptId);
     }
-@Autowired
- AnswerRepository answerRepository;
-    @GetMapping("/{quizAttemptId}/submit")
-    public ResponseEntity<String> submitQuizAttempt(@PathVariable Integer quizAttemptId) {
-        QuizAttempt quizAttempt = quizAttemptRepository.getById(quizAttemptId);
-        float i=calculateScore(quizAttempt,quizAttempt.getCondidacy().getId_Condidacy());
-        quizAttempt.setScore(calculateScore(quizAttempt,quizAttempt.getCondidacy().getId_Condidacy()));
-        System.out.println(i);
+
+    @Autowired
+    AnswerRepository answerRepository;
+
+    @GetMapping("/{quizAttemptId}/submit/{Id_condidacy}")
+    public ResponseEntity<String> submitQuizAttempt(@PathVariable Integer quizAttemptId, @PathVariable Integer Id_condidacy) {
+        QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
+        float i = calculateScore(quizAttempt, Id_condidacy);
+        quizAttempt.setScore(calculateScore(quizAttempt, Id_condidacy));
         quizAttempt.getCondidacy().setAttempted(true);
         quizAttemptRepository.save(quizAttempt);
         return ResponseEntity.ok("QuizAttempt with id: " + quizAttemptId + " submitted successfully with score: " + quizAttempt.getScore());
     }
 
-    private float calculateScore(QuizAttempt quizAttempt,int id_condidacy) {
-       List<Quiz>  quizzes=quizRepository.findAll();
-       Quiz quiz=quizAttempt.getQuiz();
-        int score = 0;
-        Condidacy condidacy=condidacyRepository.findById(id_condidacy).orElse(null);
-        if (condidacy.getId_Condidacy()==quizAttempt.getCondidacy().getId_Condidacy())
+    private float calculateScore(QuizAttempt quizAttempt, int id_condidacy) {
+       // List<Quiz> quizzes = quizRepository.findAll();
+        Quiz quiz = quizAttempt.getQuiz();
+        Condidacy condidacy = condidacyRepository.findById(id_condidacy).orElse(null);
+        if (condidacy.getId_Condidacy() == quizAttempt.getCondidacy().getId_Condidacy())
         {
-
             for (AnswerAttempt answerAttempt : quizAttempt.getAnswerAttempts()) {
                 if (answerAttempt.getAnswer().isCorrect()) {
-                    score+=answerAttempt.getAnswer().getQuestion().getPoint();
+                    float i = answerAttempt.getQuizAttempt().getScore();
+                    i += answerAttempt.getAnswer().getQuestion().getPoint();
+                    answerAttempt.getQuizAttempt().setScore(i);
+                    answerAttemptRepository.save(answerAttempt);
+                    System.out.println(i);
                 }
             }
         }
 
-
-        return score/quiz.getNbQuestion();
+        System.out.println(quizAttempt.getScore() / quiz.getNbQuestion());
+        return quizAttempt.getScore() / quiz.getNbQuestion();
 
     }
 }
