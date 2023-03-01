@@ -51,7 +51,9 @@ public interface Pi_Mobility {
     public void ajouterQuestion(Question question, Integer quizId) ;
     public void ajouterReponse(Integer questionId,Answer reponse) ;
     public void ajouterQuiz(Quiz quiz,Integer OpportunityId) ;
-    void ajouterAnswer(Answer answer, Integer questionId);
+    public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException ;
+
+        void ajouterAnswer(Answer answer, Integer questionId);
    // ResponseEntity<Question> getQuestionById(Integer questionId);
 
 

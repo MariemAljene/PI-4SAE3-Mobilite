@@ -1,6 +1,7 @@
 package tn.esprit.spring.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.spel.ast.OpOr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,32 @@ public class ExamenRestController {
     QuizAttemptRepository quizAttemptRepository;
     @Autowired
     AnswerAttemptRepository answerAttemptRepository;
+    @Autowired
+    CondidacyRepository condidacyRepository;
+    /*@PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
+    public ResponseEntity<String> SENDMail(@PathVariable int id_Opportunity) {
+        int n = 0;
+        List<Condidacy> condidacy = condidacyRepository.findAll();
+        for (Condidacy condidacy1 : condidacy) {
+            if (condidacy1.getOpportunity().getId_Opportunity() == id_Opportunity) {
+                n++;
+            }
+        }
+        try {
+            pi_mobility.sendSelectedCandidatesEmails(id_Opportunity);
+            return ResponseEntity.ok("Emails sent successfully to the top " +opportunityRepository.findById(id_Opportunity).get().getCapacity()  + " candidates.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
+        }
+    }*/
+    @Autowired
+    OpportunityRepository opportunityRepository;
+    @Autowired
+    QuestionRepository questionRepository;
+    @Autowired
+    QuizRepository quizRepository;
+    @Autowired
+    AnswerRepository answerRepository;
 
     @GetMapping("/Opportunity/GetAll")
     public List<Opportunity> getAllOpportunities() {
@@ -134,6 +161,12 @@ public class ExamenRestController {
 
     }
 
+ /*   @PostMapping("Quiz/addQuizWith")
+    public ResponseEntity<String> addQuizWithQuestionsAndAnswers(@RequestBody Quiz quiz) {
+      pi_mobility.ajouterQuizAvecQuestionsEtReponses(quiz);
+        return ResponseEntity.ok("addedQuiz");
+    }*/
+
     @ResponseBody
     @GetMapping("/Trie/{opportuniteId}")
     public List<Condidacy> Trie(@PathVariable Integer opportuniteId) {
@@ -141,35 +174,12 @@ public class ExamenRestController {
 
     }
 
-
     @GetMapping("candidatures/top/{opportunityId}")
     public List<Condidacy> getTopNCandidatures(@PathVariable Integer opportunityId) {
 
 
         return pi_mobility.getTopNCandidatures(opportunityId);
     }
-
-    @Autowired
-    CondidacyRepository condidacyRepository;
-
-    /*@PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
-    public ResponseEntity<String> SENDMail(@PathVariable int id_Opportunity) {
-        int n = 0;
-        List<Condidacy> condidacy = condidacyRepository.findAll();
-        for (Condidacy condidacy1 : condidacy) {
-            if (condidacy1.getOpportunity().getId_Opportunity() == id_Opportunity) {
-                n++;
-            }
-        }
-        try {
-            pi_mobility.sendSelectedCandidatesEmails(id_Opportunity);
-            return ResponseEntity.ok("Emails sent successfully to the top " +opportunityRepository.findById(id_Opportunity).get().getCapacity()  + " candidates.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
-        }
-    }*/
-    @Autowired
-    OpportunityRepository opportunityRepository;
 
     @PostMapping("Condidacy/sendSelectedCandidatesEmailsTest/{id_Opportunity}")
     public ResponseEntity<String> sendSelectedCandidatesEmailsTest(@PathVariable int id_Opportunity) {
@@ -188,18 +198,10 @@ public class ExamenRestController {
         }
     }
 
- /*   @PostMapping("Quiz/addQuizWith")
-    public ResponseEntity<String> addQuizWithQuestionsAndAnswers(@RequestBody Quiz quiz) {
-      pi_mobility.ajouterQuizAvecQuestionsEtReponses(quiz);
-        return ResponseEntity.ok("addedQuiz");
-    }*/
-
-
     @PostMapping("/Quiz/AddQuizQuestionAndResponse/{questionIds}/{Id_Opportunity}")
     public ResponseEntity<?> ajouterQuiz(@RequestBody Quiz quiz, @PathVariable List<Integer> questionIds, @PathVariable Integer Id_Opportunity) {
         HashSet<Question> questions = new HashSet<>();
         for (Integer questionId : questionIds) {
-
             {
                 Question question = questionRepository.findById(questionId).orElse(null);
                 questionRepository.save(question);
@@ -209,16 +211,13 @@ public class ExamenRestController {
         }
         quiz.setQuestions((Set<Question>) questions);
         quiz.setQuestions(questions);
+        Opportunity opportunity=opportunityRepository.findById(Id_Opportunity).orElse(null);
+        quiz.setOpportunity(opportunity);
         pi_mobility.ajouterQuiz(quiz, Id_Opportunity);
         quizRepository.save(quiz);
 
         return ResponseEntity.ok().build();
     }
-
-    @Autowired
-    QuestionRepository questionRepository;
-    @Autowired
-    QuizRepository quizRepository;
 
     @PostMapping("/{idQuiz}/question")
     public ResponseEntity<?> ajouterQuestionAuQuiz(@RequestBody Question question) {
@@ -248,7 +247,6 @@ public class ExamenRestController {
         return ResponseEntity.ok("QuizAttempt started with id: " + savedQuizAttempt.getIdQuizAttempt());
     }
 
-
     @PostMapping("/{quizAttemptId}/answer/{id_answer}")
     public ResponseEntity<String> answerQuestion(@PathVariable Integer quizAttemptId, @RequestBody AnswerAttempt answerAttempt, @PathVariable Integer id_answer) {
         QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
@@ -258,9 +256,6 @@ public class ExamenRestController {
         answerAttemptRepository.save(answerAttempt);
         return ResponseEntity.ok("Answer saved successfully for QuizAttempt with id: " + quizAttemptId);
     }
-
-    @Autowired
-    AnswerRepository answerRepository;
 
     @GetMapping("/{quizAttemptId}/submit/{Id_condidacy}")
     public ResponseEntity<String> submitQuizAttempt(@PathVariable Integer quizAttemptId, @PathVariable Integer Id_condidacy) {
@@ -273,11 +268,10 @@ public class ExamenRestController {
     }
 
     private float calculateScore(QuizAttempt quizAttempt, int id_condidacy) {
-       // List<Quiz> quizzes = quizRepository.findAll();
+        // List<Quiz> quizzes = quizRepository.findAll();
         Quiz quiz = quizAttempt.getQuiz();
         Condidacy condidacy = condidacyRepository.findById(id_condidacy).orElse(null);
-        if (condidacy.getId_Condidacy() == quizAttempt.getCondidacy().getId_Condidacy())
-        {
+        if (condidacy.getId_Condidacy() == quizAttempt.getCondidacy().getId_Condidacy()) {
             for (AnswerAttempt answerAttempt : quizAttempt.getAnswerAttempts()) {
                 if (answerAttempt.getAnswer().isCorrect()) {
                     float i = answerAttempt.getQuizAttempt().getScore();
@@ -292,6 +286,22 @@ public class ExamenRestController {
         System.out.println(quizAttempt.getScore() / quiz.getNbQuestion());
         return quizAttempt.getScore() / quiz.getNbQuestion();
 
+    }
+    @PostMapping("Condidacy/sendSelectedCandidatesEmailQuiz/{id_Opportunity}")
+    public ResponseEntity<String> sendSelectedCandidatesEmailsQuiz(@PathVariable int id_Opportunity) {
+        int n = 0;
+        List<Condidacy> condidacy = condidacyRepository.findAll();
+        for (Condidacy condidacy1 : condidacy) {
+            if (condidacy1.getOpportunity().getId_Opportunity() == id_Opportunity) {
+                n++;
+            }
+        }
+        try {
+            pi_mobility.sendSelectedCandidatesEmailsQuiz(id_Opportunity);
+            return ResponseEntity.ok("Emails sent successfully to the top " + n + " candidates.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
+        }
     }
 }
 

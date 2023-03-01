@@ -564,4 +564,72 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
         return score;
     }
+    public List<Condidacy> trierEtudiantsParScoreQuiz(Integer Id_Opportunity) {
+        Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
+
+        // Récupérer toutes les candidatures pour cette opportunité
+      //  List<Condidacy> condidacies = condidacyRepository.findById(Id_Opportunity).orElse(null);
+        List<Condidacy> condidaciesAll=condidacyRepository.findAll();
+        List<Condidacy> condidacies=new ArrayList<>();
+        for(Condidacy condidacy :condidaciesAll)
+        {
+            if (condidacy.getOpportunity()== opportunity)
+            {
+                condidacies.add(condidacy);
+            }
+        }
+
+        QuizAttempt quizAttempt1=null;
+       for(QuizAttempt quizAttempt2:quizAttemptRepository.findAll())
+       {
+           if(quizAttempt2.getQuiz().getId_Quiz()==opportunity.getQuizzesQuiz().getId_Quiz() && quizAttempt2.getCondidacy().getOpportunity().getId_Opportunity()==Id_Opportunity)
+           {
+               quizAttempt1=quizAttempt2;
+           }
+       }
+        // Trier les candidatures par score de QuizAttempt
+        QuizAttempt finalQuizAttempt = quizAttempt1;
+        condidacies.sort(Comparator.comparing(condidacy -> {
+
+            QuizAttempt quizAttempt = finalQuizAttempt;
+            return quizAttempt.getScore();
+        }).reversed());
+
+        return condidacies;
+    }
+    public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException {
+        List<Condidacy> selectedCandidates =  trierEtudiantsParScoreQuiz(opportunityId);
+        //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
+      //  List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
+
+        for (Condidacy candidate : selectedCandidates) {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(candidate.getUser().getEmail());
+            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
+candidate.setStatus(status.Accepted);
+            // Set the HTML content of the email
+            String htmlContent = "<html><body>"
+                    + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
+                    + "<p>Congratulations! You have been  Finally Accepted for the following opportunity:</p>"
+                    + "<h1>" + opportunityRepository.findById(opportunityId).get().getTitle() + "</h1>"
+                    + "<h2>" + opportunityRepository.findById(opportunityId).get().getCreatedBy().getUserName() + "</h2>"
+                    + "<p>Please contact the opportunity provider for further details.</p>"
+                    + "<img src='cid:image'>"
+                    + "<p>Best regards,<br>Your Application Team</p>"
+                    + "</body></html>";
+
+            helper.setText(htmlContent, true);
+
+            // Add an image as an attachment
+            ClassPathResource imageResource = new ClassPathResource("img.png");
+            InputStream inputStream = imageResource.getInputStream();
+            DataSource imageDataSource = new ByteArrayDataSource(inputStream, "image/png");
+            helper.addInline("image", imageDataSource);
+
+            javaMailSender.send(message);
+        }
+
+    }
 }
