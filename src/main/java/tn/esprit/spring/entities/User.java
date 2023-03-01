@@ -1,11 +1,21 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
+
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Set;
 
 @Entity
-public class User {
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+public class User implements Serializable {
 
     @Id
     private String userName;
@@ -23,6 +33,15 @@ public class User {
     private String CV;
     private String Gender;
     private String Grade;
+
+ /*   @Column(columnDefinition="tinyint(1) default 0 not null")
+    private boolean desactivate;
+    @Temporal(TemporalType.DATE)
+    private Date lastLoginDate;
+    @Temporal(TemporalType.DATE)
+    private Date dateCreate;
+    @JsonIgnore
+    private boolean isConnected;*/
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE",

@@ -1,19 +1,25 @@
 package tn.esprit.spring.services.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import tn.esprit.spring.entities.PasswordResetToken;
 import tn.esprit.spring.entities.Role;
 import tn.esprit.spring.entities.User;
+import tn.esprit.spring.repositories.PasswordResetTokenRepository;
 import tn.esprit.spring.repositories.RoleRepository;
 import tn.esprit.spring.repositories.UserRepository;
 
 
-import javax.transaction.Transactional;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
 @Service
 public class UserService {
     @Autowired
@@ -24,9 +30,18 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JavaMailSender userMailSender;
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
 
-    /*public void initRoleAndUser() {
+
+
+
+
+
+    public void initRoleAndUser() {
 
         Role adminRole = new Role();
         adminRole.setRoleName("Admin");
@@ -38,36 +53,27 @@ public class UserService {
         userRole.setRoleDescription("Default role for newly created record");
         roleDao.save(userRole);
 
-        User adminUser = new User();
-        adminUser.setUserName("admin123");
-        adminUser.setUserPassword(getEncodedPassword("admin@pass"));
-        adminUser.setUserFirstName("admin");
-        adminUser.setUserLastName("admin");
-        Set<Role> adminRoles = new HashSet<>();
-        adminRoles.add(adminRole);
-        adminUser.setRole(adminRoles);
-        userDao.save(adminUser);
-
-//        User user = new User();
-//        user.setUserName("raj123");
-//        user.setUserPassword(getEncodedPassword("raj@123"));
-//        user.setUserFirstName("raj");
-//        user.setUserLastName("sharma");
-//        Set<Role> userRoles = new HashSet<>();
-//        userRoles.add(userRole);
-//        user.setRole(userRoles);
-//        userDao.save(user);
-    }*/
+        Role partnerRole = new Role();
+        partnerRole.setRoleName("Partner");
+        partnerRole.setRoleDescription("Default role for newly created record");
+        roleDao.save(partnerRole);
+    }
 
     public User registerNewUser(User user) {
-        //Role role = roleDao.findById("User").get();
-        //Set<Role> userRoles = new HashSet<>();
-        //userRoles.add(role);
-        //user.setRole(userRoles);
         user.setUserPassword(getEncodedPassword(user.getUserPassword()));
 
         return userDao.save(user);
     }
+
+//////-----------RegistrationEmail----------/////////
+        public void sendEmail(String to, String subject, String text) {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setSubject(subject);
+            message.setText(text);
+            userMailSender.send(message);
+        }
+
 
     public String getEncodedPassword(String password) {
         return passwordEncoder.encode(password);
@@ -87,15 +93,7 @@ public class UserService {
     public void update(User user){
         userDao.save(user);
     }
-   /* @Transactional
-    public void assignOperateurToFacture(String userName, Long idFacture) {
-        User user = userDao.findById(userName).orElse(null);
-        Facture facture = factureServiceImp.findById(idFacture);
-        Set<Facture> factures = new HashSet<>();
-        factures.add(facture);
-        user.setFactures(factures);
-        user.getFactures().add(facture);
-    }*/
+
     public long count(){
       long count=userDao.count();
       return count;
@@ -114,19 +112,59 @@ public class UserService {
         }
             return countoperateur;
     }
-    public long countadmin(){
-        long countadmin=0;
-        List<User> users=userDao.findAll();
-        for(User user:users) {
 
-            Set<Role> roles=user.getRole();
-            Role role= roles.iterator().next();
-            String rolename = role.getRoleName();
-            if(rolename.equals("Admin")){
-                countadmin+=1;
-            }
-        }
-        return countadmin;
+    public User findByEmail(String Email) {
+        return userDao.findByEmail(Email);
     }
+
+    @Value("${spring.mail.username}")
+    private String fromAddress;
+    public void generatePasswordResetToken(String Email) {
+        User user = userDao.findByEmail(Email);
+        if (user == null) {
+            throw new UserNotFoundException("No user found with Email: " + Email);
+        }
+
+        String token = generateToken();
+
+        PasswordResetToken passwordResetToken = new PasswordResetToken();
+        passwordResetToken.setToken(token);
+        passwordResetToken.setUser(user);
+        passwordResetToken.setExpiryDate(LocalDateTime.now().plusHours(24));
+
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        String subject = "Password reset request";
+        String text = "Please click the following link to reset your password: http://localhost:8081/forgot-password?token=" + token;
+        sendEmail(user.getEmail(), subject, text);
+    }
+    private String generateToken() {
+        return UUID.randomUUID().toString();
+    }
+
+    public void changePassword(String userName, String newPassword) {
+        User user = userDao.findByuserName(userName);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        user.setUserPassword(passwordEncoder.encode(newPassword));
+        userDao.save(user);
+    }
+
+   /* public void desactivate_Acount(String userId) {
+        User user = userDao.findById(userId).get();
+        user.setConnected(false);
+        user.setDesactivate(true);
+        userDao.save(user);
+    }
+
+
+    public void activate_Acount(String userId) {
+        User user = userDao.findById(userId).get();
+        user.setDesactivate(false);
+        user.setLastLoginDate(new Date());
+        userDao.save(user);
+    }*/
+
 
 }
