@@ -4,20 +4,16 @@ import com.example.appoitement.entities.Appointement;
 import com.example.appoitement.entities.Historique;
 import com.example.appoitement.interfaces.IAppointementService;
 import com.example.appoitement.interfaces.IHistoriqueService;
-import com.example.appoitement.repositories.AppointementRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @AllArgsConstructor
@@ -34,6 +30,8 @@ public class AppointementRestController {
     // @Qualifier("AppointementServiceImpl")
     IAppointementService appointementService;
 
+
+
     @GetMapping("/retrieve-all-rendezvous")
     public List<Appointement> getAppointement() {
         List<Appointement> appointementList = appointementService.retrieveAllRdv();
@@ -45,15 +43,25 @@ public class AppointementRestController {
     public Appointement retrieveAppointement(@PathVariable("rendezvous-id") Integer idAppointement) {
         return appointementService.retrieveRdv(idAppointement);
     }
+    @PostMapping
+    public ResponseEntity<?> addAppointment(@RequestBody Appointement appointment) {
+        try {
+            Appointement savedAppointment = appointementService.addRdv(appointment);
+            return ResponseEntity.ok(savedAppointment);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add appointment.");
+        }
+    }
 
-
-    @PostMapping("/add-rendezvous")
+   /* @PostMapping("/add-rendezvous")
     public Appointement addRdv(@RequestBody Appointement a) {
         Appointement savedAppointment = appointementService.addRdv(a);
 
         return savedAppointment;
     }
-
+*/
     @DeleteMapping("/remove-rendezvous/{appointement-id}")
     public void removeRdv(@PathVariable("appointement-id") Integer idAppointement) {
 
@@ -120,7 +128,15 @@ public class AppointementRestController {
         String report = historiqueService.generateAppointmentReport(id, NamePartner);
         return report;
     }
+
+   /* @PutMapping("/{appointmentId}/cancel")
+    public ResponseEntity<Object> cancelAppointment(@PathVariable Integer idAppointement) {
+        appointementService.cancelAppointment(idAppointement);
+        return ResponseEntity.ok().build();
+    }*/
+
 }
+
 
 
 

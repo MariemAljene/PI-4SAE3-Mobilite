@@ -1,0 +1,21 @@
+package com.example.appoitement.repositories;
+
+
+import com.example.appoitement.entities.WaitingList;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Repository
+public interface WaitingListRepository extends JpaRepository<WaitingList, Integer> {
+
+   // List<WaitingList> findByDateRequested(LocalDate dateDemande);
+   @Query("SELECT w FROM WaitingList w JOIN FETCH w.appointement a WHERE a.idAppointement = :appointmentId")
+   WaitingList findByAppointmentIdWithAppointment(@Param("appointmentId") Integer appointmentId);
+}
+
+

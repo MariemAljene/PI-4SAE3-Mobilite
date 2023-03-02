@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +16,9 @@ public interface AppointementRepository extends JpaRepository<Appointement, Inte
     List<Appointement> findByDateDemandeBetweenOrderByDateDemande(LocalDate startDate, LocalDate endDate);
     @Query("SELECT COUNT(a) FROM Appointement a WHERE a.dateRdv = :date AND a.status = true")
     int countAppointmentsOnDate(@Param("date") LocalDate date);
+
+
+    List<Appointement> findByStatusAndDateRdvBefore(boolean b, LocalDate dateRdv);
 
 }
 

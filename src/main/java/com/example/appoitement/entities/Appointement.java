@@ -1,9 +1,10 @@
 package com.example.appoitement.entities;
 
-import com.example.appoitement.services.AppointementListener;
+import com.example.appoitement.interfaces.EmailService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
+import javax.mail.MessagingException;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class Appointement  implements Serializable {
     private Integer PhoneNumber;
     // @Temporal(TemporalType.DATE)
     private LocalDate dateDemande;
-    // @Temporal(TemporalType.DATE)
+   //@Temporal(TemporalType.TIMESTAMP)
     private LocalDate dateRdv;
     private Boolean status ;
 
@@ -40,4 +41,11 @@ public class Appointement  implements Serializable {
     private Appointement app;
 
 
+
+    public void sendReminderEmail(EmailService emailService) throws MessagingException {
+        String to = this.email;
+        String subject = "Appointment Reminder";
+        String body = "Hello " + this.firstname + ",\n\nThis is a reminder that you have an appointment scheduled for " + this.dateRdv.toString() + ".\n\nThank you.";
+        emailService.sendEmail(to, subject, body);
+    }
 }

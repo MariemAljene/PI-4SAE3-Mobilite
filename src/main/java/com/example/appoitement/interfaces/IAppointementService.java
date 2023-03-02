@@ -24,4 +24,7 @@ public interface IAppointementService {
     public List<Appointement> findByDateRangeSortedByDateDemande(LocalDate startDate, LocalDate endDate);
     public boolean isAppointmentAvailable(LocalDate date);
 
+  //  void cancelAppointment(Integer idAppointement);
+  //public void scheduleAppointmentFromWaitingList(LocalDate dateDemande) ;
+
 }
