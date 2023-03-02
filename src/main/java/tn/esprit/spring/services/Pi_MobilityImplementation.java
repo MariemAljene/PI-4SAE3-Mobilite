@@ -92,8 +92,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
     @Override
     public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int ID_Opportuinity) {
-
-
         condidacy.setStatus(status.In_Progress);
         User user = userRepository.findById(Id_Student).orElse(null);
         Opportunity opportunity = opportunityRepository.findById(ID_Opportuinity).orElse(null);
@@ -102,6 +100,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         condidacy.setScore(0);
         return condidacyRepository.save(condidacy);
     }
+
 
     @Override
     public Condidacy updateCandidate(Condidacy condidacy) {
@@ -236,7 +235,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         int n = opportunity.getCapacity();
         List<Condidacy> CondidacyTOP = trierEtudiantsParScore(opportunityId);
         List<Condidacy> topNCandidatures = new ArrayList<>();
-        List<Condidacy> ListeAttente=new ArrayList<>();
+        List<Condidacy> ListeAttente = new ArrayList<>();
         if (opportunity.getNeeds() == 0) {
             for (int i = 0; i < n && i < CondidacyTOP.size(); i++) {
                 topNCandidatures.add(CondidacyTOP.get(i));
@@ -265,20 +264,20 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
         return topNCandidatures;
     }
+
     public List<Condidacy> GetListeAttente(Integer opportunityId) {
         Opportunity opportunity = opportunityRepository.findById(opportunityId).orElse(null);
         int n = opportunity.getCapacity();
         List<Condidacy> CondidacyTOP = trierEtudiantsParScore(opportunityId);
-        List<Condidacy> ListeAttente=new ArrayList<>();
+        List<Condidacy> ListeAttente = new ArrayList<>();
 
-            for (int i = n; i < n+n && i < CondidacyTOP.size(); i++) {
-                ListeAttente.add(CondidacyTOP.get(i));
-                CondidacyTOP.get(i).setStatus(status.Pre_Selected);
-                userRepository.save(CondidacyTOP.get(i).getUser());
+        for (int i = n; i < n + n && i < CondidacyTOP.size(); i++) {
+            ListeAttente.add(CondidacyTOP.get(i));
+            CondidacyTOP.get(i).setStatus(status.Pre_Selected);
+            userRepository.save(CondidacyTOP.get(i).getUser());
 
 
-            }
-
+        }
 
 
         return ListeAttente;
@@ -312,14 +311,14 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     public void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException {
         List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
         //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
-        List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
+        List<Condidacy> ListeAttente = GetListeAttente(opportunityId);
 
         for (Condidacy candidate : selectedCandidates) {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(candidate.getUser().getEmail());
-            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
+            helper.setSubject("Opportunity selection" + opportunityRepository.findById(opportunityId).get().getTitle());
 
             // Set the HTML content of the email
             String htmlContent = "<html><body>"
@@ -350,7 +349,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(candidate.getUser().getEmail());
-            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
+            helper.setSubject("Opportunity selection" + opportunityRepository.findById(opportunityId).get().getTitle());
 
             // Set the HTML content of the email
             String htmlContent = "<html><body>"
@@ -521,7 +520,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     }
 
 
-
     public QuizAttempt startQuizAttempt(Condidacy candidacy, Integer quizId) {
         Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new RuntimeException("Quiz not found"));
         QuizAttempt quizAttempt = new QuizAttempt();
@@ -564,29 +562,26 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
         return score;
     }
+
     public List<Condidacy> trierEtudiantsParScoreQuiz(Integer Id_Opportunity) {
         Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
 
         // Récupérer toutes les candidatures pour cette opportunité
-      //  List<Condidacy> condidacies = condidacyRepository.findById(Id_Opportunity).orElse(null);
-        List<Condidacy> condidaciesAll=condidacyRepository.findAll();
-        List<Condidacy> condidacies=new ArrayList<>();
-        for(Condidacy condidacy :condidaciesAll)
-        {
-            if (condidacy.getOpportunity()== opportunity)
-            {
+        //  List<Condidacy> condidacies = condidacyRepository.findById(Id_Opportunity).orElse(null);
+        List<Condidacy> condidaciesAll = condidacyRepository.findAll();
+        List<Condidacy> condidacies = new ArrayList<>();
+        for (Condidacy condidacy : condidaciesAll) {
+            if (condidacy.getOpportunity() == opportunity) {
                 condidacies.add(condidacy);
             }
         }
 
-        QuizAttempt quizAttempt1=null;
-       for(QuizAttempt quizAttempt2:quizAttemptRepository.findAll())
-       {
-           if(quizAttempt2.getQuiz().getId_Quiz()==opportunity.getQuizzesQuiz().getId_Quiz() && quizAttempt2.getCondidacy().getOpportunity().getId_Opportunity()==Id_Opportunity)
-           {
-               quizAttempt1=quizAttempt2;
-           }
-       }
+        QuizAttempt quizAttempt1 = null;
+        for (QuizAttempt quizAttempt2 : quizAttemptRepository.findAll()) {
+            if (quizAttempt2.getQuiz().getId_Quiz() == opportunity.getQuizzesQuiz().getId_Quiz() && quizAttempt2.getCondidacy().getOpportunity().getId_Opportunity() == Id_Opportunity) {
+                quizAttempt1 = quizAttempt2;
+            }
+        }
         // Trier les candidatures par score de QuizAttempt
         QuizAttempt finalQuizAttempt = quizAttempt1;
         condidacies.sort(Comparator.comparing(condidacy -> {
@@ -597,18 +592,20 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
         return condidacies;
     }
+
     public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException {
-        List<Condidacy> selectedCandidates =  trierEtudiantsParScoreQuiz(opportunityId);
+        List<Condidacy> selectedCandidates = trierEtudiantsParScoreQuiz(opportunityId);
         //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
-      //  List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
+        //  List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
 
         for (Condidacy candidate : selectedCandidates) {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             helper.setTo(candidate.getUser().getEmail());
-            helper.setSubject("Opportunity selection"+opportunityRepository.findById(opportunityId).get().getTitle());
-candidate.setStatus(status.Accepted);
+            helper.setSubject("Opportunity selection" + opportunityRepository.findById(opportunityId).get().getTitle());
+            candidate.setStatus(status.Accepted);
+            condidacyRepository.save(candidate);
             // Set the HTML content of the email
             String htmlContent = "<html><body>"
                     + "<p>Dear " + candidate.getUser().getUserName() + ",</p>"
@@ -631,5 +628,29 @@ candidate.setStatus(status.Accepted);
             javaMailSender.send(message);
         }
 
+    }
+
+    @Override
+    public List<Question> RtreiveQuestionOfQuizBySpeciality(String UserName, Integer id_Quiz) {
+        List<Question> questions = new ArrayList<>();
+        User user = userRepository.findById(UserName).orElse(null);
+        Quiz quiz = quizRepository.findById(id_Quiz).orElse(null);
+
+        for (Question question : quiz.getQuestions()) {
+            String specialy = extraireChaine(user.getGrade());
+            questions = AfficherQuestionParspecialite(specialy);
+            questions.add(question);
+        }
+        return questions;
+    }
+
+    List<Question> AfficherQuestionParspecialite(String speciality) {
+        List<Question> questions = new ArrayList<>();
+        for (Question question : questionRepository.findAll()) {
+            if (question.getSpecialty().equals(speciality)) {
+                questions.add(question);
+            }
+        }
+        return questions;
     }
 }

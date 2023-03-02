@@ -1,5 +1,6 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,10 +19,10 @@ public class AnswerAttempt {
     private Long id;
 
     private String content;
-
+@JsonIgnore
     @ManyToOne
     private Answer answer;
-
+@JsonIgnore
     @ManyToOne
     private QuizAttempt quizAttempt;
 

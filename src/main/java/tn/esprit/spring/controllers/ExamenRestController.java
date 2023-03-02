@@ -4,11 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.ast.OpOr;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @RestController
@@ -211,6 +214,8 @@ public class ExamenRestController {
         }
         quiz.setQuestions((Set<Question>) questions);
         quiz.setQuestions(questions);
+        int nb=questions.size();
+        quiz.setNbQuestion(nb);
         Opportunity opportunity=opportunityRepository.findById(Id_Opportunity).orElse(null);
         quiz.setOpportunity(opportunity);
         pi_mobility.ajouterQuiz(quiz, Id_Opportunity);
@@ -224,12 +229,14 @@ public class ExamenRestController {
         for (Answer answer : question.getAnswers()) {
             answer.setQuestion(question);
         }
+
         questionRepository.save(question);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/question/{idQuestion}/reponse")
     public ResponseEntity<?> ajouterReponseALaQuestion(@PathVariable Integer idQuestion, @RequestBody Answer reponse) {
+
         pi_mobility.ajouterReponse(idQuestion, reponse);
         return ResponseEntity.ok().build();
     }
@@ -242,6 +249,9 @@ public class ExamenRestController {
         savedQuizAttempt.setCondidacy(condidacy);
         savedQuizAttempt.getCondidacy().setId_Condidacy(id_Condidacy);
         savedQuizAttempt.setQuiz(quiz);
+        savedQuizAttempt.setStartTime(LocalDate.now());
+        LocalDateTime endTime = savedQuizAttempt.getStartTime().atTime(quiz.getDuration(), 0);
+        savedQuizAttempt.setEndTime(endTime);
         quizRepository.save(quiz);
         //savedQuizAttempt.getCondidacy().setAttempted(true);
         return ResponseEntity.ok("QuizAttempt started with id: " + savedQuizAttempt.getIdQuizAttempt());
@@ -287,6 +297,22 @@ public class ExamenRestController {
         return quizAttempt.getScore() / quiz.getNbQuestion();
 
     }
+   // @Scheduled(fixedRate = 1000) // Check every second
+    public void checkQuizTimes() {
+        List<QuizAttempt> quizAttempts = quizAttemptRepository.findAll();
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        for (QuizAttempt quizAttempt : quizAttempts) {
+            // Check if end time of quiz has been reached
+            if (quizAttempt.getEndTime() != null && currentTime.isAfter(quizAttempt.getEndTime())) {
+                // Submit quiz attempt
+                float score = calculateScore(quizAttempt, quizAttempt.getCondidacy().getId_Condidacy());
+                quizAttempt.setScore(score);
+                quizAttempt.getCondidacy().setAttempted(true);
+                quizAttemptRepository.save(quizAttempt);
+            }
+        }
+    }
     @PostMapping("Condidacy/sendSelectedCandidatesEmailQuiz/{id_Opportunity}")
     public ResponseEntity<String> sendSelectedCandidatesEmailsQuiz(@PathVariable int id_Opportunity) {
         int n = 0;
@@ -303,5 +329,12 @@ public class ExamenRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
         }
     }
+    @ResponseBody
+    @GetMapping("/QuizParSpecialy/Quiz/{id}/{Id_Quiz}")
+    public List<Question> GetQuizSpecialite(@PathVariable String id,@PathVariable Integer Id_Quiz) {
+        return pi_mobility.RtreiveQuestionOfQuizBySpeciality(id,Id_Quiz);
+
+    }
+
 }
 

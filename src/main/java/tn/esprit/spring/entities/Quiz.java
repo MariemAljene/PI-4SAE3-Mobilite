@@ -26,6 +26,8 @@ public class Quiz implements Serializable {
 
     private String title;
     private String description;
+    private  int Duration;
+
 @JsonIgnore
     @OneToOne
     private Opportunity opportunity;

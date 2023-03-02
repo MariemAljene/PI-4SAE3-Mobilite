@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -25,11 +27,15 @@ public class QuizAttempt implements Serializable {
     @JsonIgnore
     @OneToOne
     private Quiz quiz;
-
+@JsonIgnore
     @OneToMany(mappedBy = "quizAttempt", cascade = CascadeType.ALL)
     private List<AnswerAttempt> answerAttempts;
 
     private float score;
+    private LocalDate StartTime;
+    private LocalDateTime EndTime;
+
+
 
     // getters and setters
 
