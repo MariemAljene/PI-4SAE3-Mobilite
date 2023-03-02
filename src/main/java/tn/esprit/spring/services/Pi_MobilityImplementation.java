@@ -48,6 +48,8 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     QuizRepository quizRepository;
     @Autowired
     QuizAttemptRepository quizAttemptRepository;
+    @Autowired
+    ScheduelRepository scheduelRepository;
 
     @Override
     public List<Opportunity> findAllOpportunities() {
@@ -308,7 +310,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
     }
 
-    public void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException {
+    public List<Condidacy> sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException {
         List<Condidacy> selectedCandidates = getTopNCandidatures(opportunityId);
         //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
         List<Condidacy> ListeAttente = GetListeAttente(opportunityId);
@@ -374,6 +376,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
             javaMailSender.send(message);
         }
+        return selectedCandidates;
     }
 
 
@@ -601,7 +604,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         for (Condidacy candidate : selectedCandidates) {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
             helper.setTo(candidate.getUser().getEmail());
             helper.setSubject("Opportunity selection" + opportunityRepository.findById(opportunityId).get().getTitle());
             candidate.setStatus(status.Accepted);
@@ -644,6 +646,8 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         return questions;
     }
 
+
+
     List<Question> AfficherQuestionParspecialite(String speciality) {
         List<Question> questions = new ArrayList<>();
         for (Question question : questionRepository.findAll()) {
@@ -652,5 +656,27 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
             }
         }
         return questions;
+    }
+    @Override
+    public void SendMailPreSelected(Integer id_Opportunity) throws MessagingException, IOException {
+       List<Schedule> schedule =null;
+        List<Condidacy>condidacies =sendSelectedCandidatesEmailsTest(id_Opportunity);
+        for(Condidacy condidacy:condidacies)
+        {
+            for(Schedule schedule1 :scheduelRepository.findAll())
+            {
+
+
+
+            }
+        }
+
+
+
+    }
+
+    @Override
+    public void SendMailQuizFinallySelected() {
+
     }
 }

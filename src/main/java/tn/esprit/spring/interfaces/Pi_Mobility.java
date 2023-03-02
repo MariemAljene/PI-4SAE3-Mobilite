@@ -1,6 +1,5 @@
 package tn.esprit.spring.interfaces;
 
-import org.springframework.http.ResponseEntity;
 import tn.esprit.spring.entities.*;
 
 import javax.mail.MessagingException;
@@ -45,7 +44,7 @@ public interface Pi_Mobility {
 
     public void sendSelectedCandidatesEmails(Integer opportunityId);
 
-    void sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException;
+    List<Condidacy> sendSelectedCandidatesEmailsTest(Integer opportunityId) throws MessagingException, IOException;
 
    void  ajouterQuizAvecQuestionsEtReponses(Quiz quiz);
     public void ajouterQuestion(Question question, Integer quizId) ;
@@ -54,8 +53,9 @@ public interface Pi_Mobility {
     public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException ;
 List<Question> RtreiveQuestionOfQuizBySpeciality(String UserName,Integer id_Quiz);
 
-   // ResponseEntity<Question> getQuestionById(Integer questionId);
-
+//Scheduel
+public void SendMailPreSelected(Integer id_Opportunity) throws MessagingException, IOException ;
+    void SendMailQuizFinallySelected();
 
 
 
