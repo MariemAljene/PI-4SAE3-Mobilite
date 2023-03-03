@@ -1,16 +1,15 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -21,10 +20,16 @@ public class Schedule implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_Scheduel;
-    private  String MailPre_Selected;
-    private  String Quiz_Selected;
     private LocalDate StartDate;
-    private  int Status;
+    private int Status=0;
+    @Enumerated(EnumType.STRING)
+    private TypeScheduel typeScheduel;
+    @JsonIgnore
+    @OneToMany(mappedBy = "schedule")
+    private List<Condidacy> candidates;
+    @JsonIgnore
+    @OneToMany(mappedBy = "scheduleSecondSelection")
+    private List<QuizAttempt> quizAttempts;
 
 
 }

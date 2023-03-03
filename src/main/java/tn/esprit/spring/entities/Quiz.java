@@ -26,24 +26,25 @@ public class Quiz implements Serializable {
 
     private String title;
     private String description;
-    private  int Duration;
+    private int Duration;
 
-@JsonIgnore
+    @JsonIgnore
     @OneToOne
     private Opportunity opportunity;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "quiz_question",
-            joinColumns = { @JoinColumn(name = "quiz_id") },
-            inverseJoinColumns = { @JoinColumn(name = "question_id") }
+            joinColumns = {@JoinColumn(name = "quiz_id")},
+            inverseJoinColumns = {@JoinColumn(name = "question_id")}
     )
     private Set<Question> questions = new HashSet<>();
 
 
     private LocalDate startDate;
-    private  int nbQuestion;
+    private int nbQuestion;
     private LocalDate endDate;
+
     public Quiz(String title, String description, Opportunity opportunity, List<Question> questions, LocalDate startDate, LocalDate endDate) {
         this.title = title;
         this.description = description;

@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.io.Serializable;
+
 @Entity
 @Getter
 @Setter
@@ -16,19 +17,15 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Reponse implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer IdReponse ;
-    private String Reponse ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer IdReponse;
+    private String Reponse;
 
-    private Integer Avis ;
+    private Integer Avis;
 
 
     @OneToOne
     Question question;
-
-
-
-
 
 
 }

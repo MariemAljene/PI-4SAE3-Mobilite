@@ -1,15 +1,21 @@
 package tn.esprit.spring.controllers;
 
+import com.google.zxing.WriterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.ast.OpOr;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
+import tn.esprit.spring.Config.QRCodeGenerator;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -66,7 +72,8 @@ public class ExamenRestController {
     }
 
     @PostMapping("/Opportunity/CreateNewOpportunity/{id_Partner}")
-    public Opportunity createOpportunity(@RequestBody Opportunity opportunity, @PathVariable String id_Partner) {
+    public Opportunity createOpportunity(@RequestBody Opportunity opportunity, @PathVariable String id_Partner) throws IOException, WriterException {
+        System.out.println(Paths.get("qr_code_template.html").toAbsolutePath().toString());
 
         return pi_mobility.createOpportunity(opportunity, id_Partner);
     }
@@ -92,6 +99,25 @@ public class ExamenRestController {
             return ResponseEntity.notFound().build();
         }
     }
+    @GetMapping("/opportunity/{id}/qrcode")
+    public ResponseEntity<byte[]> generateOpportunityQRCode(@PathVariable Integer id) throws IOException, WriterException {
+        // Récupérer l'opportunité correspondante à l'ID
+        Opportunity opportunity = opportunityRepository.findById(id).orElse(null);
+        if (opportunity == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Générer le QR code
+        byte[] qrCodeBytes = QRCodeGenerator.generateQRCodeImage(opportunity);
+
+        // Retourner la réponse avec le contenu image/png
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        headers.setContentLength(qrCodeBytes.length);
+        return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
+    }
+
+
 
     ///////////////////   Condidacy
     @GetMapping("/Condidacy/GetAllCondidacies")
@@ -330,7 +356,7 @@ public class ExamenRestController {
         }
     }
     @ResponseBody
-    @GetMapping("/QuizParSpecialy/Quiz/{id}/{Id_Quiz}")
+    @GetMapping("/QuizParSpecialy/Quiz/{UserName}/{Id_Quiz}")
     public List<Question> GetQuizSpecialite(@PathVariable String id,@PathVariable Integer Id_Quiz) {
         return pi_mobility.RtreiveQuestionOfQuizBySpeciality(id,Id_Quiz);
 

@@ -1,5 +1,6 @@
 package tn.esprit.spring.interfaces;
 
+import com.google.zxing.WriterException;
 import tn.esprit.spring.entities.*;
 
 import javax.mail.MessagingException;
@@ -12,7 +13,7 @@ public interface Pi_Mobility {
 
     public Optional<Opportunity> findOpportunityById(Integer id);
 
-    public Opportunity createOpportunity(Opportunity opportunity, String id_Partner);
+    public Opportunity createOpportunity(Opportunity opportunity, String id_Partner) throws IOException, WriterException;
 
     public Opportunity updateOpportunity(Opportunity opportunity);
 
@@ -50,12 +51,10 @@ public interface Pi_Mobility {
     public void ajouterQuestion(Question question, Integer quizId) ;
     public void ajouterReponse(Integer questionId,Answer reponse) ;
     public void ajouterQuiz(Quiz quiz,Integer OpportunityId) ;
-    public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException ;
+    public List<Condidacy> sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException ;
 List<Question> RtreiveQuestionOfQuizBySpeciality(String UserName,Integer id_Quiz);
 
-//Scheduel
-public void SendMailPreSelected(Integer id_Opportunity) throws MessagingException, IOException ;
-    void SendMailQuizFinallySelected();
+
 
 
 

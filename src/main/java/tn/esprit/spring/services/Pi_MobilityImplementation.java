@@ -1,5 +1,10 @@
 package tn.esprit.spring.services;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.*;
@@ -20,6 +25,7 @@ import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.*;
@@ -62,10 +68,23 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     }
 
     @Override
-    public Opportunity createOpportunity(Opportunity opportunity, String Id_Partner) {
-        User Partner = userRepository.findById(Id_Partner).orElse(null);
-        opportunity.setCreatedBy(Partner);
+    public Opportunity createOpportunity(Opportunity opportunity, String Id_Partner) throws IOException, WriterException {
+        String qrContent = opportunity.getId_Opportunity() + "_" + UUID.randomUUID().toString();
+        opportunity.setQrContent(qrContent);
 
+        // Générer l'image du QR code
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 200, 200);
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        byte[] qrCodeImage = outputStream.toByteArray();
+        opportunity.setQrCodeImage(qrCodeImage);
+        User user = userRepository.findById(Id_Partner).orElse(null);
+        opportunity.setCreatedBy(user);
         return opportunityRepository.save(opportunity);
 
 
@@ -596,7 +615,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         return condidacies;
     }
 
-    public void sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException {
+    public List<Condidacy> sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException {
         List<Condidacy> selectedCandidates = trierEtudiantsParScoreQuiz(opportunityId);
         //   List<Quiz > quizList =opportunityRepository.findById(opportunityId).get().getQuizzes();
         //  List<Condidacy> ListeAttente= GetListeAttente(opportunityId);
@@ -629,7 +648,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
 
             javaMailSender.send(message);
         }
-
+        return selectedCandidates;
     }
 
     @Override
@@ -647,7 +666,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     }
 
 
-
     List<Question> AfficherQuestionParspecialite(String speciality) {
         List<Question> questions = new ArrayList<>();
         for (Question question : questionRepository.findAll()) {
@@ -657,26 +675,18 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         }
         return questions;
     }
-    @Override
-    public void SendMailPreSelected(Integer id_Opportunity) throws MessagingException, IOException {
-       List<Schedule> schedule =null;
-        List<Condidacy>condidacies =sendSelectedCandidatesEmailsTest(id_Opportunity);
-        for(Condidacy condidacy:condidacies)
-        {
-            for(Schedule schedule1 :scheduelRepository.findAll())
-            {
 
-
-
-            }
-        }
-
-
-
+    private String generateQRContent(Opportunity opportunity) {
+        return "https://example.com/opportunity/" + opportunity.getId_Opportunity();
     }
 
-    @Override
-    public void SendMailQuizFinallySelected() {
+    private byte[] generateQRCodeImage(String qrContent, int width, int height) throws WriterException, IOException {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, width, height);
 
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        return pngOutputStream.toByteArray();
     }
+
 }

@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class Post implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idPost;
     private String content;
     private Date publishDate;
@@ -30,7 +30,6 @@ public class Post implements Serializable {
 
     @OneToOne
     private Rating rating;
-
 
 
 }

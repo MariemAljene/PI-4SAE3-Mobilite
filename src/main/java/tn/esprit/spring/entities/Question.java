@@ -24,18 +24,19 @@ public class Question implements Serializable {
     private String content;
     @Enumerated(EnumType.STRING)
     private Speciality specialty;
-@JsonIgnore
+    @JsonIgnore
 
-@ManyToMany(mappedBy = "questions")
-private Set<Quiz> quizzes = new HashSet<>();
+    @ManyToMany(mappedBy = "questions")
+    private Set<Quiz> quizzes = new HashSet<>();
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
     private List<Answer> answers;
-    private  int Point;
+    private int Point;
 
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "userQ")
     private User userQ;
+
     public Question(String content) {
         this.content = content;
     }

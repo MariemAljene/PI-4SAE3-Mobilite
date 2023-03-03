@@ -17,32 +17,39 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Opportunity   implements Serializable {
+public class Opportunity implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer  Id_Opportunity;
-    private int    Capacity;
-    private LocalDate StarDate ;
-    private  LocalDate EndDate;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer Id_Opportunity;
+    private int Capacity;
+    private LocalDate StarDate;
+    private LocalDate EndDate;
     @Enumerated(EnumType.STRING)
-    private  TypeOpp Type ;
+    private TypeOpp Type;
     @Enumerated(EnumType.STRING)
-    private  Grade grade ;
+    private Grade grade;
     @Enumerated(EnumType.STRING)
-    private  Speciality specialite ;
-    private  float needs ;
-    private  String Description ;
-    private  String Title;
-    private  float Coef1stYear;
-    private  float Coef2stYear;
-    private  float Coef3stYear;
-@JsonIgnore
+    private Speciality specialite;
+    private float needs;
+    private String Description;
+    private String Title;
+    private float Coef1stYear;
+    private float Coef2stYear;
+    private float Coef3stYear;
+    @Column(length = 1000)
+    private String qrContent;
+    private byte[] qrCodeImage;
+    @JsonIgnore
 
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
     @OneToOne(mappedBy = "opportunity", cascade = CascadeType.ALL)
     private Quiz quizzesQuiz;
+    public void setQrCodeImage(byte[] qrCodeImage) {
+        this.qrCodeImage = qrCodeImage;
+    }
+
 
 
 }

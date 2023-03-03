@@ -8,6 +8,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.swing.*;
 import java.io.Serializable;
+
 @Entity
 @Getter
 @Setter
@@ -15,19 +16,14 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class SolvReclam implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer IdSolv ;
-    private Action action ;
-    private String SolvRec ;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer IdSolv;
+    private Action action;
+    private String SolvRec;
 
 
     @OneToOne(mappedBy = "solvReclam")
-     Reclamation reclamation;
-
-
-
-
-
+    Reclamation reclamation;
 
 
 }

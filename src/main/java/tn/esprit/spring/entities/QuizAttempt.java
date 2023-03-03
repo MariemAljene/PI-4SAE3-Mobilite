@@ -27,15 +27,16 @@ public class QuizAttempt implements Serializable {
     @JsonIgnore
     @OneToOne
     private Quiz quiz;
-@JsonIgnore
+    @JsonIgnore
     @OneToMany(mappedBy = "quizAttempt", cascade = CascadeType.ALL)
     private List<AnswerAttempt> answerAttempts;
 
     private float score;
     private LocalDate StartTime;
     private LocalDateTime EndTime;
-
-
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
+    private Schedule scheduleSecondSelection;
 
     // getters and setters
 

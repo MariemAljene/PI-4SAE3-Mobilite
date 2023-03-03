@@ -24,5 +24,5 @@ public class Participant {
     public User participant;
 
     @ManyToOne
-    public Room  room;
+    public Room room;
 }

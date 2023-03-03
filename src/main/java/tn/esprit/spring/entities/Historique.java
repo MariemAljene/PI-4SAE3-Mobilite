@@ -16,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Historique implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NonNull
     private Integer idAppointement;
     private String email;
@@ -24,17 +24,12 @@ public class Historique implements Serializable {
     // @Temporal(TemporalType.DATE)
     private LocalDate dateRdv;
     private Integer DurationAppointment;
-    private  String NamePartner;
-    private  String Report;
-    @OneToMany(mappedBy="app")
+    private String NamePartner;
+    private String Report;
+    @OneToMany(mappedBy = "app")
     @JsonIgnore
     @ToString.Exclude
     private Set<Appointement> Appointements;
-
-
-
-
-
 
 
 }

@@ -15,7 +15,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Rating implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idRating;
     private int rate;
 

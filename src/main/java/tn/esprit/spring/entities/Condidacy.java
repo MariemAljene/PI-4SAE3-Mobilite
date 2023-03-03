@@ -17,29 +17,32 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class Condidacy implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer  Id_Condidacy;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer Id_Condidacy;
 
-    private  float Moyenne_1year;
-    private  float Moyenne_2year;
-    private  float Moyenne_3year;
-    private float  score;
+    private float Moyenne_1year;
+    private float Moyenne_2year;
+    private float Moyenne_3year;
+    private float score;
     private boolean attempted = false;
-    private  String MotivationDescription ;
+    private String MotivationDescription;
     @Enumerated(EnumType.STRING)
 
-    private  status Status ;
+    private status Status;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
 
     private User user;
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opportunity_id")
     private Opportunity opportunity;
     @OneToOne(mappedBy = "condidacy", cascade = CascadeType.ALL)
     private QuizAttempt quizAttempt;
+    @ManyToOne
+    @JoinColumn(name = "schedule_id")
+    private Schedule schedule;
 
 
 }

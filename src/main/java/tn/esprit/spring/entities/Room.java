@@ -21,9 +21,8 @@ public class Room {
     private String name;
 
 
-
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    public  List<Participant> members;
+    public List<Participant> members;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     public List<Message> messages;
