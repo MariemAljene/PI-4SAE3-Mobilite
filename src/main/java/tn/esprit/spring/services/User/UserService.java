@@ -4,13 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import tn.esprit.spring.Exception.InvalidTokenException;
+import tn.esprit.spring.Exception.UserNotFoundException;
 import tn.esprit.spring.entities.PasswordResetToken;
 import tn.esprit.spring.entities.Role;
 import tn.esprit.spring.entities.User;
+import tn.esprit.spring.entities.VerificationToken;
 import tn.esprit.spring.repositories.PasswordResetTokenRepository;
 import tn.esprit.spring.repositories.RoleRepository;
 import tn.esprit.spring.repositories.UserRepository;
@@ -34,12 +36,11 @@ public class UserService {
     private JavaMailSender userMailSender;
     @Autowired
     private PasswordResetTokenRepository passwordResetTokenRepository;
+    @Autowired
+    private EmailService emailService;
 
-
-
-
-
-
+    @Autowired
+    private VerificationTokenService verificationTokenService;
 
     public void initRoleAndUser() {
 
@@ -61,18 +62,37 @@ public class UserService {
 
     public User registerNewUser(User user) {
         user.setUserPassword(getEncodedPassword(user.getUserPassword()));
-
-        return userDao.save(user);
+        user.setIsverified(0);
+        User saveduser=userDao.save(user);
+        emailService.sendVerificationEmail(saveduser);
+        return saveduser;
+    }
+    public User activateUser(String token) {
+        User user = userDao.findByVerificationToken(token);
+        if (user != null) {
+            user.setIsverified(1);
+            user.setVerificationToken(null);
+            userDao.save(user);
+        }
+        return user;
     }
 
-//////-----------RegistrationEmail----------/////////
-        public void sendEmail(String to, String subject, String text) {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(text);
-            userMailSender.send(message);
+    /////Methode 2 ACTIVATE///////////
+    /*public User activateUser(String token) {
+        User user = userDao.findByVerificationToken(token);
+
+        if (userDao.findByVerificationToken(token) == null || verificationTokenService.isExpired())
+        { // Vérifier si le jeton est valide et non expiré
+            throw new InvalidTokenException("Invalid or expired verification token");
         }
+        else if (user != null) {
+            user.setIsverified(1);
+            user.setVerificationToken(null);
+            userDao.save(user);
+        }
+
+        return user;
+    }*/
 
 
     public String getEncodedPassword(String password) {
@@ -84,6 +104,9 @@ public class UserService {
     }
     public User findOne(String userName){
         return userDao.findById(userName).orElse(null);
+    }
+    public List<User> getUnverifiedUsers() {
+        return userDao.findUnverifiedUsers();
     }
     public void delete(String userName){
         User u= userDao.findById(userName).orElse(null);
@@ -136,8 +159,9 @@ public class UserService {
 
         String subject = "Password reset request";
         String text = "Please click the following link to reset your password: http://localhost:8081/forgot-password?token=" + token;
-        sendEmail(user.getEmail(), subject, text);
+        emailService.sendEmail(user.getEmail(), subject, text);
     }
+
     private String generateToken() {
         return UUID.randomUUID().toString();
     }
@@ -148,6 +172,15 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
         user.setUserPassword(passwordEncoder.encode(newPassword));
+        userDao.save(user);
+    }
+    public void ISVerified(String userName) {
+      int  verified=1;
+        User user = userDao.findByuserName(userName);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        user.setIsverified(verified);
         userDao.save(user);
     }
 

@@ -17,6 +17,7 @@ import tn.esprit.spring.repositories.UserRepository;
 import tn.esprit.spring.util.JwtUtil;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -34,7 +35,8 @@ public class JwtService implements UserDetailsService {
     public JwtResponse createJwtToken(JwtRequest jwtRequest) throws Exception {
         String userName = jwtRequest.getUserName();
         String userPassword = jwtRequest.getUserPassword();
-        authenticate(userName, userPassword);
+
+            authenticate(userName, userPassword);
 
         UserDetails userDetails = loadUserByUsername(userName);
         String newGeneratedToken = jwtUtil.generateToken(userDetails);
@@ -69,6 +71,7 @@ public class JwtService implements UserDetailsService {
     private void authenticate(String userName, String userPassword) throws Exception {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
+
         } catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {

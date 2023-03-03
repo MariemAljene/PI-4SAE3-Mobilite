@@ -7,7 +7,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import tn.esprit.spring.entities.JwtRequest;
 import tn.esprit.spring.entities.JwtResponse;
+import tn.esprit.spring.entities.User;
 import tn.esprit.spring.services.User.JwtService;
+
+import javax.jws.soap.SOAPBinding;
 
 @RestController
 @CrossOrigin
@@ -18,6 +21,7 @@ public class JwtController {
 
     @PostMapping({"/authenticate"})
     public JwtResponse createJwtToken(@RequestBody JwtRequest jwtRequest) throws Exception {
+
         return jwtService.createJwtToken(jwtRequest);
     }
 }

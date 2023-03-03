@@ -33,8 +33,9 @@ public class User implements Serializable {
     private String CV;
     private String Gender;
     private String Grade;
-
- /*   @Column(columnDefinition="tinyint(1) default 0 not null")
+    private int isverified;
+    private String verificationToken;
+ /*
     private boolean desactivate;
     @Temporal(TemporalType.DATE)
     private Date lastLoginDate;

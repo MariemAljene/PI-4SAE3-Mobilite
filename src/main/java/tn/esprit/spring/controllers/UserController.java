@@ -5,29 +5,48 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.entities.User;
-import tn.esprit.spring.repositories.PasswordResetTokenRepository;
-import tn.esprit.spring.services.User.UserNotFoundException;
+import tn.esprit.spring.entities.VerificationToken;
+import tn.esprit.spring.services.User.EmailService;
 import tn.esprit.spring.services.User.UserService;
+import tn.esprit.spring.services.User.VerificationTokenService;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.PermitAll;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private VerificationTokenService verificationTokenService;
 
     @PostMapping("/registerNewUser")
     public User createUser(@RequestBody User user) {
         User savedUser = userService.registerNewUser(user);
-        String to = user.getEmail();
-        String subject = "Account Created";
-        String text = "Your account has been created successfully.";
-        userService.sendEmail(to, subject, text);
+      //  String to = user.getEmail();
+       // String subject = "Account Created";
+       // String text = "Your account has been created successfully.";
+       // userService.sendEmail(to, subject, text);
+        VerificationToken verificationToken = verificationTokenService.createVerificationToken(user); // création du jeton de vérification
+        verificationTokenService.saveVerificationToken(verificationToken);
         return savedUser;
+    }
+    @PutMapping("/activate/{verificationToken}")
+    public ResponseEntity activateAccount(@PathVariable String verificationToken) {
+        User user = userService.activateUser(verificationToken);
+        if (user != null) {
+             String to = user.getEmail();
+             String subject = "Account Created";
+             String text = "Your account has been created successfully.";
+            emailService.sendEmail(to, subject, text);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostConstruct
@@ -54,6 +73,12 @@ public class UserController {
     @GetMapping({"/user/{userName}"})
     public User findOne(@PathVariable String userName){
         return userService.findOne(userName);
+    }
+
+    @GetMapping("/unverified-users")
+    @PreAuthorize("hasRole('Admin')")
+    public List<User> getUnverifiedUsers() {
+      return   userService.getUnverifiedUsers();
     }
 
     @GetMapping({"/forUser"})
@@ -85,12 +110,20 @@ public class UserController {
         userService.changePassword(userName, newPassword);
         return ResponseEntity.ok().build();
     }
+
    @PostMapping("/forgot-password")
    @PermitAll
    public ResponseEntity<?> forgotPassword(@RequestParam("Email") String Email) {
        userService.generatePasswordResetToken(Email);
        return ResponseEntity.ok().build();
    }
+
+  @PutMapping("/VerifUser/{userName}")
+  @PreAuthorize("hasRole('Admin')")
+  public void VerifUser(@PathVariable String userName) {
+
+      userService.ISVerified(userName);
+  }
 
 
 

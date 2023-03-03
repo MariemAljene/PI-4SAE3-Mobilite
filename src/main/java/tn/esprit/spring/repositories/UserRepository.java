@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import tn.esprit.spring.entities.User;
 import tn.esprit.spring.entities.User;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,6 +14,11 @@ public interface UserRepository extends JpaRepository<User, String> {
    // public Optional<User> findByName(String name);
   //  User findByEmail(String Email);
   User findByuserName(String userName);
+  User  findByVerificationToken(String Token);
+ @Query("SELECT u FROM User u WHERE u.isverified = 0")
+ List<User> findUnverifiedUsers();
+    @Query("SELECT u FROM User u WHERE u.isverified = 1")
+    List<User> findVerifiedUsers();
    @Query("SELECT u FROM User u WHERE u.Email = ?1")
    User findByEmail(String email);
 }
