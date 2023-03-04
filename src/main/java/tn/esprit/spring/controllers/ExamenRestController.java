@@ -1,24 +1,37 @@
 package tn.esprit.spring.controllers;
 
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.expression.spel.ast.OpOr;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.spring.Config.QRCodeGenerator;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
 
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static tn.esprit.spring.Config.QRCodeGenerator.generateQRCodeImage;
 
 @RestController
 @RequestMapping("/Pi_Mobility")
@@ -99,22 +112,38 @@ public class ExamenRestController {
             return ResponseEntity.notFound().build();
         }
     }
-    @GetMapping("/opportunity/{id}/qrcode")
-    public ResponseEntity<byte[]> generateOpportunityQRCode(@PathVariable Integer id) throws IOException, WriterException {
-        // Récupérer l'opportunité correspondante à l'ID
+    @GetMapping(value = "/opportunities/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> generateQRCode(@PathVariable("id") Integer id) throws WriterException, IOException {
         Opportunity opportunity = opportunityRepository.findById(id).orElse(null);
         if (opportunity == null) {
             return ResponseEntity.notFound().build();
         }
-
-        // Générer le QR code
-        byte[] qrCodeBytes = QRCodeGenerator.generateQRCodeImage(opportunity);
-
-        // Retourner la réponse avec le contenu image/png
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(generateQRCodeContent(opportunity), BarcodeFormat.QR_CODE, 350, 350);
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", stream);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_PNG);
-        headers.setContentLength(qrCodeBytes.length);
-        return new ResponseEntity<>(qrCodeBytes, headers, HttpStatus.OK);
+        return new ResponseEntity<byte[]>(stream.toByteArray(), headers, HttpStatus.OK);
+    }
+
+    private String generateQRCodeContent(Opportunity opportunity) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Title: ").append(opportunity.getTitle()).append("\n");
+        builder.append("Description: ").append(opportunity.getDescription()).append("\n");
+        builder.append("End Date: ").append(opportunity.getEndDate()).append("\n");
+        return builder.toString();
+    }
+
+
+
+
+
+    @GetMapping("/opportunities/{id}")
+    public String showOpportunityDetails(@PathVariable Integer id, Model model) {
+        Opportunity opportunity = opportunityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Opportunity not found with id: " + id));
+        model.addAttribute("opportunity", opportunity);
+        return "opportunity-details";
     }
 
 
@@ -146,6 +175,7 @@ public class ExamenRestController {
     public Condidacy createCandidate(@RequestBody Condidacy candidate, @PathVariable String id_Student, @PathVariable int id_Opportunity) {
         return pi_mobility.createCandidateAndAssignEtudiant(candidate, id_Student, id_Opportunity);
     }
+
 
     @PutMapping("/Condidacy/UpdateCondidacy/{id}")
     public ResponseEntity<Condidacy> updateCandidate(@PathVariable Integer id, @RequestBody Condidacy candidate) {
