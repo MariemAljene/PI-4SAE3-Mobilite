@@ -5,34 +5,26 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import javax.swing.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SolvReclam implements Serializable {
+public class Notification implements Serializable {
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer IdSolv ;
-    private Action action ;
-    private String SolvRec ;
-
-
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id ;
+    private String message;
+    private LocalDateTime timestamp;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "solvReclam")
-     Reclamation reclamation;
-
-
-
-
-
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Question question;
 
 
 }

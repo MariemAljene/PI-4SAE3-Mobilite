@@ -1,5 +1,6 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -24,7 +28,15 @@ public class Reponse implements Serializable {
 
 
     @OneToOne
-    Question question;
+    private Question question;
+
+
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "reponse", cascade = CascadeType.ALL)
+    private List<Rating> ratings = new ArrayList<>();
+
 
 
 

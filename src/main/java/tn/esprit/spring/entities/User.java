@@ -1,8 +1,10 @@
 package tn.esprit.spring.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -89,9 +91,37 @@ public class User {
 
 
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "userRec")
-    private List<Reclamation> reclamations = new ArrayList<>();
+   @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "idUser")
+    @JsonIgnoreProperties({"ownerUser"})
+    @ToString.Exclude
+    private List<Reclamation> reclamations;
+
+
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_traiteur")
+    @JsonIgnoreProperties({"traiteurUser"})
+    @ToString.Exclude
+    private List<Reclamation> reclamations_a_traiter;
+
+
+
+
+    public User(){
+        reclamations=new ArrayList<>();
+        reclamations_a_traiter=new ArrayList<>();
+    }
+    public User(String userFirstName,String userLastName,String Email){
+        this.userFirstName=userFirstName;
+        this.userLastName=userLastName;
+        this.Email=Email;
+        reclamations = new ArrayList<>();
+        reclamations_a_traiter =new ArrayList<>();
+
+    }
+
+
 
 
 }

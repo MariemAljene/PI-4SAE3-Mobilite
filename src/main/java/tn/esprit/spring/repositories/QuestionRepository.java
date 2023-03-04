@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Question,Integer> {
 
-    public List<Question> findQuestionByType(Type type);
+
 
 
 }
