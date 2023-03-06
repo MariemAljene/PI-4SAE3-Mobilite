@@ -14,6 +14,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.repositories.*;
@@ -666,6 +667,7 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     }
 
 
+
     List<Question> AfficherQuestionParspecialite(String speciality) {
         List<Question> questions = new ArrayList<>();
         for (Question question : questionRepository.findAll()) {
@@ -680,13 +682,19 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         return "https://example.com/opportunity/" + opportunity.getId_Opportunity();
     }
 
-    private byte[] generateQRCodeImage(String qrContent, int width, int height) throws WriterException, IOException {
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, width, height);
+    public Map<String, Double> getAvgQuizScoreByOpportunityType() {
+        List<Object[]> resultList = quizAttemptRepository.findAvgQuizScoreByOpportunityType();
 
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-        return pngOutputStream.toByteArray();
+        Map<String, Double> resultMap = new HashMap<>();
+
+        for (Object[] result : resultList) {
+            String opportunityType = (String) result[0];
+            Double avgQuizScore = (Double) result[1];
+
+            resultMap.put(opportunityType, avgQuizScore);
+        }
+
+        return resultMap;
     }
 
 }

@@ -1,5 +1,6 @@
 package tn.esprit.spring.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -16,9 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 import tn.esprit.spring.Config.QRCodeGenerator;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
+import tn.esprit.spring.interfaces.StatInterface;
 import tn.esprit.spring.repositories.*;
 
 import javax.persistence.EntityNotFoundException;
@@ -26,10 +30,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static tn.esprit.spring.Config.QRCodeGenerator.generateQRCodeImage;
 
@@ -68,6 +76,8 @@ public class ExamenRestController {
     QuizRepository quizRepository;
     @Autowired
     AnswerRepository answerRepository;
+    @Autowired
+    UserRepositoy userRepositoy;
 
     @GetMapping("/Opportunity/GetAll")
     public List<Opportunity> getAllOpportunities() {
@@ -112,6 +122,7 @@ public class ExamenRestController {
             return ResponseEntity.notFound().build();
         }
     }
+
     @GetMapping(value = "/opportunities/{id}/qrcode", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> generateQRCode(@PathVariable("id") Integer id) throws WriterException, IOException {
         Opportunity opportunity = opportunityRepository.findById(id).orElse(null);
@@ -135,18 +146,12 @@ public class ExamenRestController {
         return builder.toString();
     }
 
-
-
-
-
     @GetMapping("/opportunities/{id}")
     public String showOpportunityDetails(@PathVariable Integer id, Model model) {
         Opportunity opportunity = opportunityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Opportunity not found with id: " + id));
         model.addAttribute("opportunity", opportunity);
         return "opportunity-details";
     }
-
-
 
     ///////////////////   Condidacy
     @GetMapping("/Condidacy/GetAllCondidacies")
@@ -175,7 +180,6 @@ public class ExamenRestController {
     public Condidacy createCandidate(@RequestBody Condidacy candidate, @PathVariable String id_Student, @PathVariable int id_Opportunity) {
         return pi_mobility.createCandidateAndAssignEtudiant(candidate, id_Student, id_Opportunity);
     }
-
 
     @PutMapping("/Condidacy/UpdateCondidacy/{id}")
     public ResponseEntity<Condidacy> updateCandidate(@PathVariable Integer id, @RequestBody Condidacy candidate) {
@@ -219,12 +223,6 @@ public class ExamenRestController {
         return pi_mobility.CalculScore(opportuniteId);
 
     }
-
- /*   @PostMapping("Quiz/addQuizWith")
-    public ResponseEntity<String> addQuizWithQuestionsAndAnswers(@RequestBody Quiz quiz) {
-      pi_mobility.ajouterQuizAvecQuestionsEtReponses(quiz);
-        return ResponseEntity.ok("addedQuiz");
-    }*/
 
     @ResponseBody
     @GetMapping("/Trie/{opportuniteId}")
@@ -270,9 +268,9 @@ public class ExamenRestController {
         }
         quiz.setQuestions((Set<Question>) questions);
         quiz.setQuestions(questions);
-        int nb=questions.size();
+        int nb = questions.size();
         quiz.setNbQuestion(nb);
-        Opportunity opportunity=opportunityRepository.findById(Id_Opportunity).orElse(null);
+        Opportunity opportunity = opportunityRepository.findById(Id_Opportunity).orElse(null);
         quiz.setOpportunity(opportunity);
         pi_mobility.ajouterQuiz(quiz, Id_Opportunity);
         quizRepository.save(quiz);
@@ -280,8 +278,10 @@ public class ExamenRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{idQuiz}/question")
-    public ResponseEntity<?> ajouterQuestionAuQuiz(@RequestBody Question question) {
+    @PostMapping("/{idQuiz}/question/{Id_user}")
+    public ResponseEntity<?> ajouterQuestionAuQuiz(@RequestBody Question question, String Id_user) {
+        User user = userRepositoy.findById(Id_user).orElse(null);
+        question.setUserQ(user);
         for (Answer answer : question.getAnswers()) {
             answer.setQuestion(question);
         }
@@ -353,7 +353,8 @@ public class ExamenRestController {
         return quizAttempt.getScore() / quiz.getNbQuestion();
 
     }
-   // @Scheduled(fixedRate = 1000) // Check every second
+
+    // @Scheduled(fixedRate = 1000) // Check every second
     public void checkQuizTimes() {
         List<QuizAttempt> quizAttempts = quizAttemptRepository.findAll();
         LocalDateTime currentTime = LocalDateTime.now();
@@ -369,6 +370,7 @@ public class ExamenRestController {
             }
         }
     }
+
     @PostMapping("Condidacy/sendSelectedCandidatesEmailQuiz/{id_Opportunity}")
     public ResponseEntity<String> sendSelectedCandidatesEmailsQuiz(@PathVariable int id_Opportunity) {
         int n = 0;
@@ -385,12 +387,55 @@ public class ExamenRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
         }
     }
+
     @ResponseBody
     @GetMapping("/QuizParSpecialy/Quiz/{UserName}/{Id_Quiz}")
-    public List<Question> GetQuizSpecialite(@PathVariable String id,@PathVariable Integer Id_Quiz) {
-        return pi_mobility.RtreiveQuestionOfQuizBySpeciality(id,Id_Quiz);
+    public List<Question> GetQuizSpecialite(@PathVariable String id, @PathVariable Integer Id_Quiz) {
+        return pi_mobility.RtreiveQuestionOfQuizBySpeciality(id, Id_Quiz);
 
     }
+
+    public String saveImage(MultipartFile imageFile) throws IOException {
+        String imageName = imageFile.getOriginalFilename();
+        byte[] bytes = imageFile.getBytes();
+        Path path = Paths.get("/uploadsFiles/" + imageName);
+        Files.write(path, bytes);
+        return imageName;
+    }
+    @Autowired
+    StatInterface statInterface;
+    @GetMapping("/specialityPercentage")
+    public Map<String, Double> getOpportunitiesPercentageBySpeciality() {
+        return statInterface.getOpportunitiesPercentageBySpeciality();
+    }
+    @GetMapping("/averageQuizCompletionTime")
+    public Map<String, Double> getAverageQuizCompletionTime() {
+        List<QuizAttempt> quizAttempts = quizAttemptRepository.findAll();
+        Map<String, Double> avgCompletionTimeByQuiz = new HashMap<>();
+
+        for (QuizAttempt quizAttempt : quizAttempts) {
+            Integer quizId = quizAttempt.getQuiz().getId_Quiz();
+            LocalDateTime endTime = quizAttempt.getEndTime();
+            LocalDate startDate = quizAttempt.getStartTime();
+            long quizCompletionTimeSeconds = ChronoUnit.SECONDS.between(startDate.atStartOfDay(), endTime);
+            double quizCompletionTimeMinutes = quizCompletionTimeSeconds / 60.0;
+
+            if (avgCompletionTimeByQuiz.containsKey(quizId.toString())) {
+                double currentAvgCompletionTime = avgCompletionTimeByQuiz.get(quizId.toString());
+                double newAvgCompletionTime = (currentAvgCompletionTime + quizCompletionTimeMinutes) / 2.0;
+                avgCompletionTimeByQuiz.put(quizId.toString(), newAvgCompletionTime);
+            } else {
+                avgCompletionTimeByQuiz.put(quizId.toString(), quizCompletionTimeMinutes);
+            }
+        }
+
+        return avgCompletionTimeByQuiz;
+    }
+
+
+
+
+
 
 }
 

@@ -1,8 +1,10 @@
 package tn.esprit.spring.configuration;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.ByteArraySchema;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -18,7 +20,8 @@ public class OpenAPIConfig {
     @Bean
     public OpenAPI springShopOpenAPI() {
         return new OpenAPI()
-                .info(infoAPI());
+                .info(infoAPI())
+                .components(new Components().addSchemas("MultipartFile", new MultipartFileSchema()));
     }
     public Info infoAPI() {
         return new Info().title("ESPRIT Mobility")
@@ -31,6 +34,12 @@ public class OpenAPIConfig {
         return contact;
     }
 
+    private static class MultipartFileSchema extends ByteArraySchema {
+        public MultipartFileSchema() {
+            super();
+            this.format("binary");
+        }
+    }
 
 
 

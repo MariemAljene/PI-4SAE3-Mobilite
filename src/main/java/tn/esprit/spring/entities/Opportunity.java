@@ -40,16 +40,17 @@ public class Opportunity implements Serializable {
     private String qrContent;
     private byte[] qrCodeImage;
     @JsonIgnore
-
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
     @OneToOne(mappedBy = "opportunity", cascade = CascadeType.ALL)
     private Quiz quizzesQuiz;
+    private double averageRating;
+    private int numberOfRatings;
+
     public void setQrCodeImage(byte[] qrCodeImage) {
         this.qrCodeImage = qrCodeImage;
     }
-
 
 
 }

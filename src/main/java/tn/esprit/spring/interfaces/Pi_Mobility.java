@@ -1,11 +1,13 @@
 package tn.esprit.spring.interfaces;
 
 import com.google.zxing.WriterException;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.entities.*;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface Pi_Mobility {
@@ -53,10 +55,7 @@ public interface Pi_Mobility {
     public void ajouterQuiz(Quiz quiz,Integer OpportunityId) ;
     public List<Condidacy> sendSelectedCandidatesEmailsQuiz(Integer opportunityId) throws MessagingException, IOException ;
 List<Question> RtreiveQuestionOfQuizBySpeciality(String UserName,Integer id_Quiz);
-
-
-
-
+    public Map<String, Double> getAvgQuizScoreByOpportunityType() ;
 
 
 

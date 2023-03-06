@@ -37,6 +37,7 @@ public class Question implements Serializable {
     @JoinColumn(name = "userQ")
     private User userQ;
 
+
     public Question(String content) {
         this.content = content;
     }
