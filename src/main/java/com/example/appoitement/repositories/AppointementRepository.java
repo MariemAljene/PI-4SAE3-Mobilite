@@ -1,10 +1,10 @@
-package com.example.appoitement.repositories;
+package tn.esprit.spring.repositories;
 
-import com.example.appoitement.entities.Appointement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import tn.esprit.spring.entities.Appointement;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +20,7 @@ public interface AppointementRepository extends JpaRepository<Appointement, Inte
 
     List<Appointement> findByStatusAndDateRdvBefore(boolean b, LocalDate dateRdv);
 
+    List<Appointement> findByDateRdv(LocalDate tomorrow);
 }
 
 

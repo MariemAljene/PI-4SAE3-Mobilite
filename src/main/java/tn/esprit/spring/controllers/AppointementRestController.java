@@ -28,6 +28,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -143,13 +144,61 @@ public class AppointementRestController {
         return ResponseEntity.ok(updatedHistorique);
     }
 
-    @GetMapping("/report")
+/*    @GetMapping("/report")
     public String generateAppointmentReport(@RequestParam(required = false) Integer id, @RequestParam(required = false) String NamePartner) {
         String report = historiqueService.generateAppointmentReport(id, NamePartner);
         return report;
+    }*/
+
+    @GetMapping("/appointment/report")
+    public ResponseEntity<String> getAppointmentReport(@RequestParam(required = false) Integer idAppointment,
+                                                       @RequestParam(required = false) String namePartner) {
+        String reportHtml = generateAppointmentReport(idAppointment, namePartner);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.TEXT_HTML);
+        return new ResponseEntity<>(reportHtml, headers, HttpStatus.OK);
     }
 
-   /* @PutMapping("/{appointmentId}/cancel")
+    private String generateAppointmentReport(Integer idAppointment, String namePartner) {
+        List<Historique> historiques = historiquerepository.findAll();
+
+        if (idAppointment != null) {
+            historiques = historiques.stream()
+                    .filter(a -> a.getIdAppointement() == idAppointment)
+                    .collect(Collectors.toList());
+        }
+
+        if (namePartner != null && !namePartner.isEmpty()) {
+            historiques = historiques.stream()
+                    .filter(a -> a.getNamePartner().equalsIgnoreCase(namePartner))
+                    .collect(Collectors.toList());
+        }
+
+        // Build the report HTML string
+        StringBuilder reportBuilder = new StringBuilder();
+        reportBuilder.append("<html><head><title>Appointment Report</title>");
+        reportBuilder.append("<style>table {border-collapse: collapse; width: 100%;} th, td {text-align: left; padding: 8px;} th {background-color: #4CAF50; color: white;}</style>");
+        reportBuilder.append("</head><body>");
+        reportBuilder.append("<h1>Appointment Report</h1>");
+        reportBuilder.append("<table><tr><th>ID</th><th>Email</th><th>Phone Number</th><th>Date</th><th>Duration</th><th>Partner Name</th><th>Report</th></tr>");
+        for (Historique appointment : historiques) {
+            reportBuilder.append("<tr>");
+            reportBuilder.append("<td>").append(appointment.getIdAppointement()).append("</td>");
+            reportBuilder.append("<td>").append(appointment.getEmail()).append("</td>");
+            reportBuilder.append("<td>").append(appointment.getPhoneNumber()).append("</td>");
+            reportBuilder.append("<td>").append(appointment.getDateRdv()).append("</td>");
+            reportBuilder.append("<td>").append(appointment.getDurationAppointment()).append("</td>");
+            reportBuilder.append("<td>").append(appointment.getNamePartner()).append("</td>");
+            reportBuilder.append("<td>").append("Appointment report: ").append(appointment.getReport()).append("</td>");
+            reportBuilder.append("</tr>");
+        }
+        reportBuilder.append("</table></body></html>");
+
+        return reportBuilder.toString();
+    }
+
+
+    /* @PutMapping("/{appointmentId}/cancel")
     public ResponseEntity<Object> cancelAppointment(@PathVariable Integer idAppointement) {
         appointementService.cancelAppointment(idAppointement);
         return ResponseEntity.ok().build();
@@ -227,10 +276,11 @@ public class AppointementRestController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/stats/average-duration")
-    public ResponseEntity<Double> getAverageDuration() {
+    @GetMapping("/stats/average-duration/chart")
+    public double getPieChart(Model model) {
         double averageDuration = historiqueService.getAverageDuration();
-        return ResponseEntity.ok().body(averageDuration);
+        model.addAttribute("averageDuration", averageDuration);
+        return averageDuration;
     }
     @GetMapping("/stats/average-duration-stat")
     public String showAverageDurationStat(Model model) {
@@ -261,6 +311,12 @@ public class AppointementRestController {
         model.addAttribute("averageDuration", averageDuration);
         return "historique";
     }
+    @PostMapping("/block-dates")
+    public ResponseEntity<String> blockDates(@RequestBody List<LocalDate> datesToBlock) {
+        appointementService.blockDates(datesToBlock);
+        return ResponseEntity.ok("Dates blocked successfully.");
+    }
+
 }
 
 

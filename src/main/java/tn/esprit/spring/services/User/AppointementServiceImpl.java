@@ -149,6 +149,22 @@ public class AppointementServiceImpl implements IAppointementService {
         }
     }
 
+    public void blockDates(List<LocalDate> datesToBlock) {
+        LocalDate currentDate = LocalDate.now();
+        List<Appointement> appointments = appointementrepository.findAll();
+        for (LocalDate date : datesToBlock) {
+            if (date.isBefore(currentDate)) {
+                continue;
+            }
+
+            for (Appointement appointment : appointments) {
+                if (appointment.getDateRdv().equals(date)) {
+                    appointment.setStatus(false);
+                    appointementrepository.save(appointment);
+                }
+            }
+        }
+    }
 
     }
 

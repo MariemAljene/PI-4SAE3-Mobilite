@@ -1,9 +1,10 @@
-package com.example.appoitement.interfaces;
+package tn.esprit.spring.interfaces;
 
-import com.example.appoitement.entities.Appointement;
-import com.example.appoitement.repositories.AppointementRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tn.esprit.spring.entities.Appointement;
+import tn.esprit.spring.entities.WaitingList;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,5 +27,10 @@ public interface IAppointementService {
 
   //  void cancelAppointment(Integer idAppointement);
   //public void scheduleAppointmentFromWaitingList(LocalDate dateDemande) ;
+  public WaitingList getWaitingListById(Integer idWaiting) ;
 
+    Appointement assignRoleToAppointment(Integer appointmentId, String roleName);
+
+    void sendReminderEmail(Appointement appointment);
+    public void blockDates(List<LocalDate> datesToBlock);
 }

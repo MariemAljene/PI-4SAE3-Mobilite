@@ -20,6 +20,7 @@ public interface AppointementRepository extends JpaRepository<Appointement, Inte
 
     List<Appointement> findByStatusAndDateRdvBefore(boolean b, LocalDate dateRdv);
 
+    List<Appointement> findByDateRdv(LocalDate tomorrow);
 }
 
 

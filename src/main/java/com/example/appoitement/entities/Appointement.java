@@ -1,10 +1,9 @@
-package com.example.appoitement.entities;
+package tn.esprit.spring.entities;
 
-import com.example.appoitement.interfaces.EmailService;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
-import javax.mail.MessagingException;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -40,12 +39,15 @@ public class Appointement  implements Serializable {
     @ToString.Exclude
     private Appointement app;
 
+    public void setRole(Role role) {
+    }
 
 
-    public void sendReminderEmail(EmailService emailService) throws MessagingException {
+
+  /*  public void sendReminderEmail(EmailService emailService) throws MessagingException {
         String to = this.email;
         String subject = "Appointment Reminder";
         String body = "Hello " + this.firstname + ",\n\nThis is a reminder that you have an appointment scheduled for " + this.dateRdv.toString() + ".\n\nThank you.";
         emailService.sendEmail(to, subject, body);
-    }
+    }*/
 }

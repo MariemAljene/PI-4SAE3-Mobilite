@@ -1,7 +1,7 @@
-package com.example.appoitement.interfaces;
+package tn.esprit.spring.interfaces;
 
-import com.example.appoitement.entities.Historique;
 import org.springframework.stereotype.Service;
+import tn.esprit.spring.entities.Historique;
 
 import java.util.List;
 
@@ -14,4 +14,8 @@ public interface IHistoriqueService {
 
     Historique updateHistorique(Integer idAppointement, Integer DurationAppointment, String NamePartner);
     public String generateAppointmentReport(int idAppointement , String NamePartner);
+
+    double getAverageDuration();
+
+    List<Historique> getHistoriques();
 }

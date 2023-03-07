@@ -1,19 +1,20 @@
-package com.example.appoitement.services;
+package tn.esprit.spring.services.User;
 
-import com.example.appoitement.entities.Appointement;
-import com.example.appoitement.entities.WaitingList;
-import com.example.appoitement.interfaces.IAppointementService;
-import com.example.appoitement.repositories.AppointementRepository;
-import com.example.appoitement.repositories.WaitingListRepository;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import tn.esprit.spring.entities.Appointement;
+import tn.esprit.spring.entities.Role;
+import tn.esprit.spring.entities.WaitingList;
+import tn.esprit.spring.interfaces.IAppointementService;
+import tn.esprit.spring.repositories.AppointementRepository;
+import tn.esprit.spring.repositories.RoleRepository;
+import tn.esprit.spring.repositories.WaitingListRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,10 @@ public class AppointementServiceImpl implements IAppointementService {
     @Autowired
     WaitingListRepository waitingListRepository;
     @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
     private JavaMailSender javaMailSender;
+
     @Override
     public List<Appointement> retrieveAllRdv() {
         return null;
@@ -54,8 +58,13 @@ public class AppointementServiceImpl implements IAppointementService {
             waitingListRepository.save(waitingList);
             throw new RuntimeException("Appointment is not available on " + date + ", added to waiting list.");
         }
-        Appointement savedAppointment =  appointementrepository.save(ap);
+        Appointement savedAppointment = appointementrepository.save(ap);
         // sendNotificationEmail(savedAppointment);
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(ap.getEmail());
+        message.setSubject("Appointment Accepted");
+        message.setText("Your appointment on " + ap.getDateRdv() + " has been accepted.");
+        javaMailSender.send(message);
         return savedAppointment;
     }
     public Appointement retrieveRdv(Integer idAppointement) {
@@ -113,6 +122,48 @@ public class AppointementServiceImpl implements IAppointementService {
     }*/
     public List<Appointement> findExpiredAppointments(LocalDate dateRdv) {
         return appointementrepository.findByStatusAndDateRdvBefore(true, dateRdv);
+    }
+    public WaitingList getWaitingListById(Integer idWaiting) {
+        return waitingListRepository.findByIdWaiting(idWaiting);
+    }
+    @Override
+    public Appointement assignRoleToAppointment(Integer appointmentId, String roleName) {
+        Appointement appointment = appointementrepository.findById(appointmentId).orElse(null);
+        Role role = roleRepository.findByRoleName(roleName);
+        appointment.setRole(role);
+        return appointementrepository.save(appointment);
+    }
+    public void sendReminderEmail(Appointement appointment) {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        if (appointment.getDateRdv().equals(tomorrow) && appointment.getStatus()) {
+            // send email using JavaMail API or another email library
+            String recipient = appointment.getEmail();
+            String subject = "Appointment Reminder";
+            String message = "Dear " + appointment.getFirstname() + " " + appointment.getLastname() + ",\n\n"
+                    + "This is a reminder that your appointment is scheduled for tomorrow, "
+                    + appointment.getDateRdv().toString() + ".\n\n"
+                    + "Please let us know if you need to reschedule or cancel the appointment.\n\n"
+                    + "Thank you,\n"
+                    + "Your Appointment Team";
+            // send the email using your email library
+        }
+    }
+
+    public void blockDates(List<LocalDate> datesToBlock) {
+        LocalDate currentDate = LocalDate.now();
+        List<Appointement> appointments = appointementrepository.findAll();
+        for (LocalDate date : datesToBlock) {
+            if (date.isBefore(currentDate)) {
+                continue;
+            }
+
+            for (Appointement appointment : appointments) {
+                if (appointment.getDateRdv().equals(date)) {
+                    appointment.setStatus(false);
+                    appointementrepository.save(appointment);
+                }
+            }
+        }
     }
 
     }

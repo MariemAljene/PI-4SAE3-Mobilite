@@ -1,6 +1,7 @@
-package com.example.appoitement.services;
+package tn.esprit.spring.services.User;
 
-import com.example.appoitement.interfaces.EmailService;
+
+import tn.esprit.spring.interfaces.EmailService;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;

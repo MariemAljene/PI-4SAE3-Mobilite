@@ -51,7 +51,7 @@ public class HistoriqueServiceImpl implements IHistoriqueService {
         return historique;
     }
 
-    public String generateAppointmentReport(int idAppointement , String NamePartner) {
+/*    public String generateAppointmentReport(int idAppointement , String NamePartner) {
         List<Historique> historiques = historiquerepository.findAll();
 
 
@@ -75,7 +75,37 @@ public class HistoriqueServiceImpl implements IHistoriqueService {
         }
 
         return reportBuilder.toString();
+    }*/
+public String generateAppointmentReport(int idAppointement, String NamePartner) {
+    List<Historique> historiques = historiquerepository.findAll();
+
+    if (NamePartner != null && !NamePartner.isEmpty()) {
+        historiques = historiques.stream()
+                .filter(a -> a.getNamePartner().equalsIgnoreCase(NamePartner))
+                .collect(Collectors.toList());
     }
+
+    // Build the report HTML string
+    StringBuilder reportBuilder = new StringBuilder();
+    reportBuilder.append("<html><head><title>Appointment Report</title></head><body>");
+    reportBuilder.append("<h1>Appointment Report</h1>");
+    reportBuilder.append("<table><tr><th>ID</th><th>Email</th><th>Phone Number</th><th>Date</th><th>Duration</th><th>Partner Name</th><th>Report</th></tr>");
+    for (Historique appointment : historiques) {
+        reportBuilder.append("<tr>");
+        reportBuilder.append("<td>").append(appointment.getIdAppointement()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getEmail()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getPhoneNumber()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getDateRdv()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getDurationAppointment()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getNamePartner()).append("</td>");
+        reportBuilder.append("<td>").append(appointment.getReport()).append("</td>");
+        reportBuilder.append("</tr>");
+    }
+    reportBuilder.append("</table></body></html>");
+
+    return reportBuilder.toString();
+}
+
     public double getAverageDuration() {
         List<Historique> historiques = historiquerepository.findAll();
         double sumDuration = historiques.stream().mapToInt(Historique::getDurationAppointment).sum();

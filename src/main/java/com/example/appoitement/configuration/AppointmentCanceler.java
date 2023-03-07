@@ -1,10 +1,11 @@
-package com.example.appoitement.configuration;
+package tn.esprit.spring.configuration;
 
-import com.example.appoitement.entities.Appointement;
-import com.example.appoitement.services.AppointementServiceImpl;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import tn.esprit.spring.entities.Appointement;
+import tn.esprit.spring.services.User.AppointementServiceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,7 +15,7 @@ public class AppointmentCanceler {
     @Autowired
     private AppointementServiceImpl appointementService;
 
-    @Scheduled(fixedRate = 2000) //exécuter toutes les 24 heures
+    @Scheduled(fixedRate = 240000) //exécuter toutes les 24 heures
     public void cancelExpiredAppointments() {
         // Calculer la date limite : maintenant moins un mois
         LocalDate dateRdv = LocalDate.now().minusMonths(1);

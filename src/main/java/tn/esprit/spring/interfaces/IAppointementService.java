@@ -32,4 +32,5 @@ public interface IAppointementService {
     Appointement assignRoleToAppointment(Integer appointmentId, String roleName);
 
     void sendReminderEmail(Appointement appointment);
+    public void blockDates(List<LocalDate> datesToBlock);
 }

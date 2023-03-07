@@ -1,4 +1,4 @@
-package tn.esprit.spring.kaddem.configuration;
+package tn.esprit.spring.configuration;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

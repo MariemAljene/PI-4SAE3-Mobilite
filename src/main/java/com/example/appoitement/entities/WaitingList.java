@@ -1,4 +1,4 @@
-package com.example.appoitement.entities;
+package tn.esprit.spring.entities;
 
 import lombok.*;
 
