@@ -32,6 +32,7 @@ public class Question implements Serializable {
     private List<Answer> answers;
     private int Point;
 
+    private String image;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "userQ")

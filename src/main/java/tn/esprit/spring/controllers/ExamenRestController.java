@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -52,22 +53,6 @@ public class ExamenRestController {
     AnswerAttemptRepository answerAttemptRepository;
     @Autowired
     CondidacyRepository condidacyRepository;
-    /*@PostMapping("Condidacy/sendEmailToTopNCandidates/{id_Opportunity}")
-    public ResponseEntity<String> SENDMail(@PathVariable int id_Opportunity) {
-        int n = 0;
-        List<Condidacy> condidacy = condidacyRepository.findAll();
-        for (Condidacy condidacy1 : condidacy) {
-            if (condidacy1.getOpportunity().getId_Opportunity() == id_Opportunity) {
-                n++;
-            }
-        }
-        try {
-            pi_mobility.sendSelectedCandidatesEmails(id_Opportunity);
-            return ResponseEntity.ok("Emails sent successfully to the top " +opportunityRepository.findById(id_Opportunity).get().getCapacity()  + " candidates.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending emails: " + e.getMessage());
-        }
-    }*/
     @Autowired
     OpportunityRepository opportunityRepository;
     @Autowired
@@ -289,6 +274,7 @@ public class ExamenRestController {
         questionRepository.save(question);
         return ResponseEntity.ok().build();
     }
+
 
     @PostMapping("/question/{idQuestion}/reponse")
     public ResponseEntity<?> ajouterReponseALaQuestion(@PathVariable Integer idQuestion, @RequestBody Answer reponse) {

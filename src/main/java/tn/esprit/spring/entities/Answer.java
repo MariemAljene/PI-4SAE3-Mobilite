@@ -23,6 +23,9 @@ public class Answer {
     @ManyToOne
     private Question question;
 
+    public Answer(String answerContent, boolean b, Question question) {
+    }
+
     // getters and setters
 }
 
