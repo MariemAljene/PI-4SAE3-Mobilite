@@ -15,10 +15,22 @@ public interface UserRepository extends JpaRepository<User, String> {
   //  User findByEmail(String Email);
   User findByuserName(String userName);
   User  findByVerificationToken(String Token);
+
+
  @Query("SELECT u FROM User u WHERE u.isverified = 0")
  List<User> findUnverifiedUsers();
     @Query("SELECT u FROM User u WHERE u.isverified = 1")
     List<User> findVerifiedUsers();
-   @Query("SELECT u FROM User u WHERE u.Email = ?1")
-   User findByEmail(String email);
+
+  /* @Query("SELECT u FROM User u WHERE u.email = ?1")
+   User findByEmail(String email);*/
+
+   public User findByEmail(String UserEmail);
+
+    public boolean existsByEmail(String UserEmail);
+
+    @Query("select u.userPassword from User u where u.email=?1")
+    public String getPasswordByEmail(String UserEmail);
+
+    public User findByUserPhone(String phone);
 }

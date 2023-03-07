@@ -5,10 +5,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.entities.User;
+import tn.esprit.spring.entities.UserMail;
+import tn.esprit.spring.repositories.IUserEmailRepository;
 
 import java.util.Random;
 @Service
-public class EmailService {
+public class EmailService implements IUserEmailRepository {
 
 
     @Autowired UserService userservice;
@@ -33,6 +35,15 @@ public class EmailService {
                 "Veuillez cliquer sur le lien ci-dessous pour activer votre compte :\n\n" +
                 "http://localhost:8081/activate?token=" + user.getVerificationToken());
         userMailSender.send(message);
+    }
+@Override
+    public void sendCodeByMail(UserMail mail) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setFrom("departement.mobility@gmail.com");
+        simpleMailMessage.setTo(mail.getTo());
+        simpleMailMessage.setSubject("Code Active");
+        simpleMailMessage.setText(mail.getCode());
+        userMailSender.send(simpleMailMessage);
     }
 
 

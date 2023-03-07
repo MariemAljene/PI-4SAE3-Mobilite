@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import tn.esprit.spring.Exception.UserBlockedException;
 import tn.esprit.spring.entities.JwtRequest;
 import tn.esprit.spring.entities.JwtResponse;
 import tn.esprit.spring.entities.User;
@@ -22,7 +23,7 @@ import java.util.Set;
 
 @Service
 public class JwtService implements UserDetailsService {
-
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -31,6 +32,8 @@ public class JwtService implements UserDetailsService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private LoginAttemptService loginAttemptService;
 
     public JwtResponse createJwtToken(JwtRequest jwtRequest) throws Exception {
         String userName = jwtRequest.getUserName();
@@ -69,12 +72,27 @@ public class JwtService implements UserDetailsService {
     }
 
     private void authenticate(String userName, String userPassword) throws Exception {
+
+        // Get the number of login attempts for the user
+        int loginAttempts = loginAttemptService.getLoginAttempts(userName);
+
+        // Check if the user is blocked
+        if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+            throw new UserBlockedException();
+        }
+
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userName, userPassword));
-
+            loginAttemptService.resetLoginAttempts(userName);
         } catch (DisabledException e) {
             throw new Exception("USER_DISABLED", e);
         } catch (BadCredentialsException e) {
+            loginAttemptService.incrementLoginAttempts(userName);
+            // If the user has exceeded the maximum number of login attempts, throw a UserBlockedException
+            if (loginAttemptService.getLoginAttempts(userName) >= MAX_LOGIN_ATTEMPTS) {
+                  loginAttemptService.blockUser(userName);
+                throw new UserBlockedException();
+            }
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }

@@ -24,4 +24,6 @@ public class JwtController {
 
         return jwtService.createJwtToken(jwtRequest);
     }
+
+
 }

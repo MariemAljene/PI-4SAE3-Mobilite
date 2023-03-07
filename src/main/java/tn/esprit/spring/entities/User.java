@@ -1,12 +1,10 @@
 package tn.esprit.spring.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Set;
 
 @Entity
@@ -22,9 +20,9 @@ public class User implements Serializable {
     private String userFirstName;
     private String userLastName;
     private String userPassword;
-    private String Email;
+    private String email;
     private String Photo;
-    private String PhoneNumber;
+    private String userPhone;
     private LocalDate Birthdate;
     private String CIN;
     private String UnyName;
@@ -35,7 +33,16 @@ public class User implements Serializable {
     private String Grade;
     private int isverified;
     private String verificationToken;
- /*
+    private String userCode;
+
+    public String getUserCode() {
+        return userCode;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+    /*
     private boolean desactivate;
     @Temporal(TemporalType.DATE)
     private Date lastLoginDate;
@@ -54,6 +61,7 @@ public class User implements Serializable {
             }
     )
     private Set<Role> role;
+
 
     public String getUserName() {
         return userName;

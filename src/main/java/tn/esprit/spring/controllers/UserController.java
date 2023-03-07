@@ -3,12 +3,14 @@ package tn.esprit.spring.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.spring.entities.User;
-import tn.esprit.spring.entities.VerificationToken;
+import tn.esprit.spring.entities.*;
+import tn.esprit.spring.repositories.UserRepository;
 import tn.esprit.spring.services.User.EmailService;
 import tn.esprit.spring.services.User.UserService;
 import tn.esprit.spring.services.User.VerificationTokenService;
+import tn.esprit.spring.util.UserCode;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.PermitAll;
@@ -21,6 +23,10 @@ public class UserController {
     private UserService userService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UserRepository userDao;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private VerificationTokenService verificationTokenService;
 
@@ -111,12 +117,12 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-   @PostMapping("/forgot-password")
+   /*@PostMapping("/forgot-password")
    @PermitAll
    public ResponseEntity<?> forgotPassword(@RequestParam("Email") String Email) {
        userService.generatePasswordResetToken(Email);
        return ResponseEntity.ok().build();
-   }
+   }*/
 
   @PutMapping("/VerifUser/{userName}")
   @PreAuthorize("hasRole('Admin')")
@@ -125,6 +131,56 @@ public class UserController {
       userService.ISVerified(userName);
   }
 
+    // http://localhost:8080/checkEmail
+    @PostMapping("/checkEmail")
+    public UserAccountResponse resetPasswordEmail(@RequestBody UserResetPassword resetPassword){
+        User user = this.userService.findByUserEmail(resetPassword.getEmail());
+        UserAccountResponse accountResponse = new UserAccountResponse();
+        if(user != null){
+            String code = UserCode.getCode();
+            System.out.println("le code est" + code);
+            UserMail mail = new UserMail(resetPassword.getEmail(),code);
+            System.out.println("le mail est" + resetPassword.getEmail());
+            System.out.println("la variable mail est" + mail);
+            emailService.sendCodeByMail(mail);
+            System.out.println("la variable User est" + user);
+            user.setUserCode(code);
+            userDao.save(user);
+            accountResponse.setResult(1);
+        } else {
+            accountResponse.setResult(0);
+        }
+        return accountResponse;
+    }
+
+    // http://localhost:8080/resetPassword
+    @PostMapping("/resetPassword")
+    public UserAccountResponse resetPassword(@RequestBody UserNewPassword newPassword){
+        User user = this.userService.findByUserEmail(newPassword.getEmail());
+        UserAccountResponse accountResponse = new UserAccountResponse();
+        if(user != null){
+            if(user.getUserCode().equals(newPassword.getCode())){
+                user.setUserPassword(passwordEncoder.encode(newPassword.getPassword()));
+                userDao.save(user);
+                accountResponse.setResult(1);
+            } else {
+                accountResponse.setResult(0);
+            }
+        } else {
+            accountResponse.setResult(0);
+        }
+        return accountResponse;
+    }
+
+
+    @PostMapping("/checkSMS")
+    public UserAccountResponse CheckSMS (@RequestBody UserResetPasswordSMS userResetPasswordSMS) {
+        return userService.CheckSMS(userResetPasswordSMS);
+    }
+    @PostMapping("/resetPasswordSMS")
+    public UserAccountResponse resetPasswordSMS (@RequestBody UserNewPasswordSMS newPassword) {
+        return userService.resetPasswordSMS(newPassword);
+    }
 
 
 }

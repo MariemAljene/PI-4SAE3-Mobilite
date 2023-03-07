@@ -2,23 +2,23 @@ package tn.esprit.spring.services.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import tn.esprit.spring.Exception.InvalidTokenException;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.Exception.UserNotFoundException;
-import tn.esprit.spring.entities.PasswordResetToken;
-import tn.esprit.spring.entities.Role;
-import tn.esprit.spring.entities.User;
-import tn.esprit.spring.entities.VerificationToken;
+import tn.esprit.spring.entities.*;
 import tn.esprit.spring.repositories.PasswordResetTokenRepository;
 import tn.esprit.spring.repositories.RoleRepository;
 import tn.esprit.spring.repositories.UserRepository;
+import tn.esprit.spring.services.User.Twilio.SmsServiceImpl;
+import tn.esprit.spring.util.UserCode;
 
 
-
+import javax.transaction.Transactional;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -30,6 +30,9 @@ public class UserService {
     @Autowired
     private RoleRepository roleDao;
 
+
+    @Autowired
+    private SmsServiceImpl smsService;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -140,7 +143,7 @@ public class UserService {
         return userDao.findByEmail(Email);
     }
 
-    @Value("${spring.mail.username}")
+   @Value("${spring.mail.username}")
     private String fromAddress;
     public void generatePasswordResetToken(String Email) {
         User user = userDao.findByEmail(Email);
@@ -162,7 +165,7 @@ public class UserService {
         emailService.sendEmail(user.getEmail(), subject, text);
     }
 
-    private String generateToken() {
+   private String generateToken() {
         return UUID.randomUUID().toString();
     }
 
@@ -184,6 +187,8 @@ public class UserService {
         userDao.save(user);
     }
 
+
+
    /* public void desactivate_Acount(String userId) {
         User user = userDao.findById(userId).get();
         user.setConnected(false);
@@ -198,6 +203,69 @@ public class UserService {
         user.setLastLoginDate(new Date());
         userDao.save(user);
     }*/
+// Reset Password:
+   public boolean ifEmailExist(String UserEmail){
+       return userDao.existsByEmail(UserEmail);
+   }
 
+    @Transactional
+    public String getPasswordByUserEmail(String userEmail){
+        return userDao.getPasswordByEmail(userEmail);
+    }
+
+    public User findByUserEmail(String UserEmail)
+    {
+        return this.userDao.findByEmail(UserEmail);
+    }
+
+    public void editUser(User user){
+        this.userDao.save(user);
+    }
+
+    //reset password Using SMS:
+    public User findByPhone(String phone)
+    {
+        return this.userDao.findByUserPhone(phone);
+    }
+
+    //Check Phone number in DB and send 6 digits code.
+    public UserAccountResponse CheckSMS (UserResetPasswordSMS userResetPasswordSMS) {
+        // Retrieve user using the entered phone number.
+        User user = this.findByPhone(userResetPasswordSMS.getPhone());
+        System.out.println("la variable User est " + user);
+        System.out.println("la variable Phone est " + userResetPasswordSMS.getPhone());
+        UserAccountResponse accountResponse = new UserAccountResponse();
+        if (user != null) {
+            String code = UserCode.getSmsCode();
+            System.out.println("le code est" + code);
+            this.smsService.SendSMS(userResetPasswordSMS.getPhone(),code);
+            System.out.println("la variable User est" + user);
+            user.setUserCode(code);
+            userDao.save(user);
+            accountResponse.setResult(1);
+        } else {
+            accountResponse.setResult(0);
+        }
+        return accountResponse;
+    }
+
+    //Compare given code with the one stored in DB and reset password.
+    public UserAccountResponse resetPasswordSMS(UserNewPasswordSMS userNewPasswordSMS) {
+        User user = this.findByPhone(userNewPasswordSMS.getPhone());
+        UserAccountResponse accountResponse = new UserAccountResponse();
+        if(user != null){
+            if(user.getUserCode().equals(userNewPasswordSMS.getCode())){
+                user.setUserPassword(passwordEncoder.encode(userNewPasswordSMS.getPassword()));
+                user.setUserCode("expired");
+                userDao.save(user);
+                accountResponse.setResult(1);
+            } else {
+                accountResponse.setResult(0);
+            }
+        } else {
+            accountResponse.setResult(0);
+        }
+        return accountResponse;
+    }
 
 }
