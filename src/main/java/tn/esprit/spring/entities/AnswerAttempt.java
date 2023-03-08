@@ -19,10 +19,10 @@ public class AnswerAttempt {
     private Long id;
 
     private String content;
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne
     private Answer answer;
-@JsonIgnore
+    @JsonIgnore
     @ManyToOne
     private QuizAttempt quizAttempt;
 
