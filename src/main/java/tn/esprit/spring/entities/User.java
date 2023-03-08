@@ -1,11 +1,10 @@
 package tn.esprit.spring.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +13,19 @@ import java.util.Set;
 @Entity
 @Getter
 @Setter
-public class User {
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+public class User implements Serializable {
 
     @Id
     private String userName;
     private String userFirstName;
     private String userLastName;
     private String userPassword;
-    private String Email;
-    private String Photo;
-    private String PhoneNumber;
+    private String email;
+
+    private String userPhone;
     private LocalDate Birthdate;
     private String CIN;
     private String UnyName;
@@ -32,6 +34,25 @@ public class User {
     private String CV;
     private String Gender;
     private String Grade;
+    private int isverified;
+    private String verificationToken;
+    private String userCode;
+
+    public String getUserCode() {
+        return userCode;
+    }
+
+    public void setUserCode(String userCode) {
+        this.userCode = userCode;
+    }
+    /*
+    private boolean desactivate;
+    @Temporal(TemporalType.DATE)
+    private Date lastLoginDate;
+    @Temporal(TemporalType.DATE)
+    private Date dateCreate;
+    @JsonIgnore
+    private boolean isConnected;*/
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE",
@@ -43,6 +64,13 @@ public class User {
             }
     )
     private Set<Role> role;
+
+    @OneToOne
+    private image Photo;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "createdBy")
+    private List<Opportunity> opportunities = new ArrayList<>();
 
     public String getUserName() {
         return userName;
@@ -84,9 +112,10 @@ public class User {
         this.role = role;
     }
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "createdBy")
-    private List<Opportunity> opportunities = new ArrayList<>();
+
+
+
+
     @JsonIgnore
 
     @OneToMany(mappedBy = "user")

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +68,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     public Optional<Opportunity> findOpportunityById(Integer id) {
         return opportunityRepository.findById(id);
     }
-
     @Override
     public Opportunity createOpportunity(Opportunity opportunity, String Id_Partner) throws IOException, WriterException {
         String qrContent = opportunity.getId_Opportunity() + "_" + UUID.randomUUID().toString();
@@ -113,12 +113,19 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
     }
 
     @Override
-    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int ID_Opportuinity) {
+    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int ID_Opportuinity) throws MessagingException, IOException {
+        Schedule schedule = new Schedule();
+        schedule.setStatus(0);
+        schedule.setTypeScheduel(TypeScheduel.First_Selection);
+        scheduelRepository.save(schedule);
+        condidacy.setSchedule(schedule);
+      //   schedule.setCandidates(sendSelectedCandidatesEmailsTest(condidacy.getOpportunity().getId_Opportunity()));
         condidacy.setStatus(status.In_Progress);
         User user = userRepository.findById(Id_Student).orElse(null);
         Opportunity opportunity = opportunityRepository.findById(ID_Opportuinity).orElse(null);
         condidacy.setUser(user);
         condidacy.setOpportunity(opportunity);
+        opportunityRepository.save(opportunity);
         condidacy.setScore(0);
         return condidacyRepository.save(condidacy);
     }
@@ -665,7 +672,6 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         }
         return questions;
     }
-
 
 
     List<Question> AfficherQuestionParspecialite(String speciality) {

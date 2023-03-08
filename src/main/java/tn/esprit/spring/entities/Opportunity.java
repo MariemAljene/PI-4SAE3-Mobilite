@@ -37,15 +37,23 @@ public class Opportunity implements Serializable {
     private float Coef2stYear;
     private float Coef3stYear;
     @Column(length = 1000)
+    @JsonIgnore
+
     private String qrContent;
+    @JsonIgnore
+
     private byte[] qrCodeImage;
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
+    @JsonIgnore
+
     @OneToOne(mappedBy = "opportunity", cascade = CascadeType.ALL)
     private Quiz quizzesQuiz;
+    @JsonIgnore
     private double averageRating;
+    @JsonIgnore
     private int numberOfRatings;
 
     public void setQrCodeImage(byte[] qrCodeImage) {

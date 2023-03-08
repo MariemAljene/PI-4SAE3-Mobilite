@@ -30,6 +30,7 @@ public class ScheduelImplementation implements Scheduel {
                     pi_mobilityImplementation.sendSelectedCandidatesEmailsTest(opportunityId);
                     scheduel.setStatus(1);
                     scheduel.setTypeScheduel(TypeScheduel.First_Selection);
+                    scheduel.setEndDate(LocalDate.now());
                 }
 
             }
@@ -37,6 +38,7 @@ public class ScheduelImplementation implements Scheduel {
 
         } else if (opportunity.getEndDate().isBefore(LocalDate.now()) && scheduel.getStatus() == 0) {
             scheduel.setStatus(2);
+            scheduel.setEndDate(LocalDate.now());
 
         }
 
@@ -52,11 +54,13 @@ public class ScheduelImplementation implements Scheduel {
                 pi_mobilityImplementation.sendSelectedCandidatesEmailsQuiz(opportunityId);
                 scheduel.setStatus(1);
                 scheduel.setTypeScheduel(TypeScheduel.Second_Selection);
-
+                scheduel.setEndDate(LocalDate.now());
 
             }
         } else if (opportunity.getQuizzesQuiz().getEndDate().isBefore(LocalDate.now()) && scheduel.getStatus() == 0) {
             scheduel.setStatus(2);
+            scheduel.setEndDate(LocalDate.now());
+
         }
 
 

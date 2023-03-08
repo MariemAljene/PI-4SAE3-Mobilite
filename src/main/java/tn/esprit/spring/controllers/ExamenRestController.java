@@ -1,34 +1,23 @@
 package tn.esprit.spring.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.expression.spel.ast.OpOr;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import tn.esprit.spring.Config.QRCodeGenerator;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.interfaces.Pi_Mobility;
 import tn.esprit.spring.interfaces.StatInterface;
 import tn.esprit.spring.repositories.*;
 
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
+import javax.mail.MessagingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,9 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static tn.esprit.spring.Config.QRCodeGenerator.generateQRCodeImage;
 
 @RestController
 @RequestMapping("/Pi_Mobility")
@@ -80,7 +67,7 @@ public class ExamenRestController {
     }
 
     @PostMapping("/Opportunity/CreateNewOpportunity/{id_Partner}")
-    public Opportunity createOpportunity(@RequestBody Opportunity opportunity, @PathVariable String id_Partner) throws IOException, WriterException {
+    public Opportunity createOpportunity(@RequestBody Opportunity opportunity, @PathVariable String id_Partner) throws IOException, WriterException, WriterException {
         System.out.println(Paths.get("qr_code_template.html").toAbsolutePath().toString());
 
         return pi_mobility.createOpportunity(opportunity, id_Partner);
@@ -131,12 +118,7 @@ public class ExamenRestController {
         return builder.toString();
     }
 
-    @GetMapping("/opportunities/{id}")
-    public String showOpportunityDetails(@PathVariable Integer id, Model model) {
-        Opportunity opportunity = opportunityRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Opportunity not found with id: " + id));
-        model.addAttribute("opportunity", opportunity);
-        return "opportunity-details";
-    }
+
 
     ///////////////////   Condidacy
     @GetMapping("/Condidacy/GetAllCondidacies")
@@ -162,7 +144,7 @@ public class ExamenRestController {
     }
 
     @PostMapping("/Condidacy/CreateNew/{id_Student}/{id_Opportunity}")
-    public Condidacy createCandidate(@RequestBody Condidacy candidate, @PathVariable String id_Student, @PathVariable int id_Opportunity) {
+    public Condidacy createCandidate(@RequestBody Condidacy candidate, @PathVariable String id_Student, @PathVariable int id_Opportunity) throws MessagingException, IOException {
         return pi_mobility.createCandidateAndAssignEtudiant(candidate, id_Student, id_Opportunity);
     }
 
@@ -424,4 +406,3 @@ public class ExamenRestController {
 
 
 }
-

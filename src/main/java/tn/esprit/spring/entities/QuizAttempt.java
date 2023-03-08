@@ -38,6 +38,8 @@ public class QuizAttempt implements Serializable {
     @JoinColumn(name = "schedule_id")
     private Schedule scheduleSecondSelection;
 
+    private String captcha;
+
     // getters and setters
 
 

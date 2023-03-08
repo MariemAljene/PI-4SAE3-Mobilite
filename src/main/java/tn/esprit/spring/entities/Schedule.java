@@ -20,7 +20,7 @@ public class Schedule implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_Scheduel;
-    private LocalDate StartDate;
+    private LocalDate EndDate;
     private int Status=0;
     @Enumerated(EnumType.STRING)
     private TypeScheduel typeScheduel;

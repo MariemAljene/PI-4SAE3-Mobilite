@@ -38,8 +38,12 @@ public class Condidacy implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opportunity_id")
     private Opportunity opportunity;
+    @JsonIgnore
+
     @OneToOne(mappedBy = "condidacy", cascade = CascadeType.ALL)
     private QuizAttempt quizAttempt;
+    @JsonIgnore
+
     @ManyToOne
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;

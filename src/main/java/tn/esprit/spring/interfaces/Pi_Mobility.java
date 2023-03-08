@@ -25,7 +25,7 @@ public interface Pi_Mobility {
 
     public Optional<Condidacy> findCandidateById(Integer id);
 
-    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int Id_Opportunity);
+    public Condidacy createCandidateAndAssignEtudiant(Condidacy condidacy, String Id_Student, int Id_Opportunity) throws MessagingException, IOException;
 
     public Condidacy updateCandidate(Condidacy condidacy);
 
