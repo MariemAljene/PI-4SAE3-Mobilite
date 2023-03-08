@@ -45,6 +45,9 @@ public class JwtService implements UserDetailsService {
         String newGeneratedToken = jwtUtil.generateToken(userDetails);
 
         User user = userDao.findById(userName).get();
+        if(user.getIsverified()==0){
+            return new JwtResponse(null, "Please Verify your account first");
+        }
         return new JwtResponse(user, newGeneratedToken);
     }
 
@@ -78,7 +81,8 @@ public class JwtService implements UserDetailsService {
 
         // Check if the user is blocked
         if (loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-            throw new UserBlockedException();
+           throw new UserBlockedException();
+
         }
 
         try {
@@ -90,9 +94,17 @@ public class JwtService implements UserDetailsService {
             loginAttemptService.incrementLoginAttempts(userName);
             // If the user has exceeded the maximum number of login attempts, throw a UserBlockedException
             if (loginAttemptService.getLoginAttempts(userName) >= MAX_LOGIN_ATTEMPTS) {
-                  loginAttemptService.blockUser(userName);
-                throw new UserBlockedException();
+                if(loginAttemptService.isUserBlocked(userName)){
+                    loginAttemptService.blockUser(userName);
+                    throw new UserBlockedException();
+                }
+                else {
+                    loginAttemptService.deBlockUser(userName);
+                }
+
+
             }
+
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }

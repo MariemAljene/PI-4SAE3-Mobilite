@@ -40,7 +40,7 @@ public class LoginAttemptService {
     }
 
 
-    private boolean isUserBlocked(String username) {
+    public boolean isUserBlocked(String username) {
         LocalDateTime blockedTime = blockedUsers.get(username);
         if (blockedTime == null) {
             return false;
@@ -49,10 +49,15 @@ public class LoginAttemptService {
             return LocalDateTime.now().isBefore(unblockTime);
         }
     }
+    public void deBlockUser(String username){
+
+           blockedUsers.remove(username);
+    }
 
     public void blockUser(String username) {
         blockedUsers.put(username, LocalDateTime.now());
     }
+
 /* public void login(String username, String password) throws UserBlockedException, InvalidCredentialsException {
         // Check if the user is blocked
         if (isUserBlocked(username)) {

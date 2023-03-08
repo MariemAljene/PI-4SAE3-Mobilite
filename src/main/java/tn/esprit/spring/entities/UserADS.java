@@ -17,7 +17,10 @@ public class UserADS {
     private String Title;
     private LocalDate start_Date;
     private LocalDate End_Date;
-     private String UnyName;
+    private String UnyName;
+     @ManyToOne
+     private  User user;
+
      @OneToOne
     private Opportunity opportunity;
 
