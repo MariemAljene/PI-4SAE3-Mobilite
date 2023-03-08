@@ -5,11 +5,14 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.entities.*;
@@ -18,6 +21,8 @@ import tn.esprit.spring.interfaces.StatInterface;
 import tn.esprit.spring.repositories.*;
 
 import javax.mail.MessagingException;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -264,7 +269,7 @@ public class ExamenRestController {
         pi_mobility.ajouterReponse(idQuestion, reponse);
         return ResponseEntity.ok().build();
     }
-
+@Autowired ScheduelRepository scheduelRepository;
     @PostMapping("/startQuiz/{id_Quiz}/{id_Condidacy}")
     public ResponseEntity<String> startQuizAttempt(@RequestBody QuizAttempt quizAttempt, @PathVariable Integer id_Quiz, @PathVariable Integer id_Condidacy) {
         QuizAttempt savedQuizAttempt = quizAttemptRepository.save(quizAttempt);
@@ -274,6 +279,12 @@ public class ExamenRestController {
         savedQuizAttempt.getCondidacy().setId_Condidacy(id_Condidacy);
         savedQuizAttempt.setQuiz(quiz);
         savedQuizAttempt.setStartTime(LocalDate.now());
+        Schedule schedule = new Schedule();
+        schedule.setStatus(0);
+        schedule.setTypeScheduel(TypeScheduel.First_Selection);
+        scheduelRepository.save(schedule);
+        condidacy.setSchedule(schedule);
+
         LocalDateTime endTime = savedQuizAttempt.getStartTime().atTime(quiz.getDuration(), 0);
         savedQuizAttempt.setEndTime(endTime);
         quizRepository.save(quiz);
@@ -294,9 +305,10 @@ public class ExamenRestController {
     @GetMapping("/{quizAttemptId}/submit/{Id_condidacy}")
     public ResponseEntity<String> submitQuizAttempt(@PathVariable Integer quizAttemptId, @PathVariable Integer Id_condidacy) {
         QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElse(null);
-        float i = calculateScore(quizAttempt, Id_condidacy);
-        quizAttempt.setScore(calculateScore(quizAttempt, Id_condidacy));
+        //float i = calculateScore(quizAttempt, Id_condidacy);
+        quizAttempt.setScore( calculateScore(quizAttempt, Id_condidacy));
         quizAttempt.getCondidacy().setAttempted(true);
+       System.out.println(quizAttempt.getScore());
         quizAttemptRepository.save(quizAttempt);
         return ResponseEntity.ok("QuizAttempt with id: " + quizAttemptId + " submitted successfully with score: " + quizAttempt.getScore());
     }
@@ -321,23 +333,30 @@ public class ExamenRestController {
         return quizAttempt.getScore() / quiz.getNbQuestion();
 
     }
+@Autowired
+    EntityManagerFactory createEntityManager;
+    @Transactional
 
-    // @Scheduled(fixedRate = 1000) // Check every second
+  //  @Scheduled(fixedRate = 1000)
     public void checkQuizTimes() {
         List<QuizAttempt> quizAttempts = quizAttemptRepository.findAll();
         LocalDateTime currentTime = LocalDateTime.now();
 
         for (QuizAttempt quizAttempt : quizAttempts) {
-            // Check if end time of quiz has been reached
+            if (quizAttempt.getCondidacy() == null) {
+                continue;
+            }
+
             if (quizAttempt.getEndTime() != null && currentTime.isAfter(quizAttempt.getEndTime())) {
-                // Submit quiz attempt
-                float score = calculateScore(quizAttempt, quizAttempt.getCondidacy().getId_Condidacy());
+                float score = calculateScore(quizAttempt, quizAttempt.getCondidacy().getId_Condidacy().intValue());
                 quizAttempt.setScore(score);
                 quizAttempt.getCondidacy().setAttempted(true);
                 quizAttemptRepository.save(quizAttempt);
             }
         }
     }
+
+
 
     @PostMapping("Condidacy/sendSelectedCandidatesEmailQuiz/{id_Opportunity}")
     public ResponseEntity<String> sendSelectedCandidatesEmailsQuiz(@PathVariable int id_Opportunity) {
