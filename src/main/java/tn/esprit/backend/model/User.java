@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tn.esprit.backend.model.chatModel.Participant;
 
-import javax.persistence.*;
-import java.time.LocalDate;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -25,7 +27,6 @@ public class User {
         private String Email;
         private String Photo;
         private String UnyName;
-        private Boolean Status;
 
 
 //        @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
