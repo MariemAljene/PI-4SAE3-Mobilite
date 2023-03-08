@@ -11,6 +11,7 @@ import tn.esprit.spring.repositories.AppointementRepository;
 import tn.esprit.spring.repositories.IHistoriqueRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -116,5 +117,29 @@ public String generateAppointmentReport(int idAppointement, String NamePartner) 
     public List<Historique> getHistoriques() {
         return null;
     }
+
+    @Override
+    public List<Historique> getHistoriquesByPartner(String partnerName) {
+        return null;
+    }
+
+
+    public String getPartnerWithMostAppointments() {
+        Map<String, Long> counts = countByPartner();
+        return counts.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    private Map<String, Long> countByPartner() {
+        List<Historique> historiques = historiquerepository.findAll();
+        return historiques.stream()
+                .collect(Collectors.groupingBy(Historique::getNamePartner, Collectors.counting()));
+    }
+
+
+
 }
 

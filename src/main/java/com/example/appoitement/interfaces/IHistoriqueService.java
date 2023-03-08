@@ -18,4 +18,8 @@ public interface IHistoriqueService {
     double getAverageDuration();
 
     List<Historique> getHistoriques();
+
+    List<Historique> getHistoriquesByPartner(String partnerName);
+
+    String getPartnerWithMostAppointments();
 }

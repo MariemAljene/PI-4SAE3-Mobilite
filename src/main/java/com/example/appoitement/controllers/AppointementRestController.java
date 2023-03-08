@@ -244,7 +244,6 @@ public class AppointementRestController {
 
         final String emailToRecipient = appointement.getEmail();
         final String emailSubject = "Succesfully Registration";
-
         final String emailMessage1 = "<html> <body> <p>Dear Sir/Madam,</p><p>You have succesfully Registered with our Services"
                 + "<br><br>"
                 + "<table border='1' width='300px' style='text-align:center;font-size:20px;'><tr> <td colspan='2'>"
@@ -315,6 +314,17 @@ public class AppointementRestController {
     public ResponseEntity<String> blockDates(@RequestBody List<LocalDate> datesToBlock) {
         appointementService.blockDates(datesToBlock);
         return ResponseEntity.ok("Dates blocked successfully.");
+    }
+    @GetMapping("/partner/{partnerName}")
+    public List<Historique> getHistoriquesByPartner(@PathVariable String partnerName) {
+        return historiqueService.getHistoriquesByPartner(partnerName);
+    }
+
+
+
+    @GetMapping("/partnerWithMostAppointments")
+    public String getPartnerWithMostAppointments() {
+        return historiqueService.getPartnerWithMostAppointments();
     }
 
 }
