@@ -44,8 +44,7 @@ public class Message {
 //    @ManyToOne
 //    @JoinColumn(name = "sender_id")
 //    private User sender;
-@ManyToMany(cascade=CascadeType.ALL)
-@JsonIgnore
 
-private List<Tag> tag;
+
+
 }

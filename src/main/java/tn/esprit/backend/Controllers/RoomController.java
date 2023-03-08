@@ -33,20 +33,20 @@ public class RoomController {
         return roomServices.getAllRooms();
     }
     @GetMapping("/getRoom/{id}")
-    public Room getRoomById(@PathVariable String id){
+    public Room getRoomById(@PathVariable Long id){
         return roomServices.getRoomById(id);
     }
     @PutMapping("/updateRoom/{id}")
-    public Room updateRoom(@PathVariable String id){
+    public Room updateRoom(@PathVariable Long id){
         return roomServices.updateRoom(id);
     }
     @DeleteMapping("/deleteRoom/{id}")
-    public void deleteRoom(@PathVariable String id){
+    public void deleteRoom(@PathVariable Long id){
         roomServices.deleteRoom(id);
     }
 
     @GetMapping("/getRoomMembers/{roomId}")
-    public List<User> GetListOfMemvers(@PathVariable String roomId){
+    public List<User> GetListOfMemvers(@PathVariable Long roomId){
         return participantServices.GetListOfMemvers(roomId);
     }
 
@@ -90,7 +90,7 @@ public class RoomController {
 //    }
 
     @PutMapping("/ban/{roomId}/{userB}/{userC}")
-    public void UserbanUser(@PathVariable String roomId,@PathVariable String userB ,@PathVariable String userC){
+    public void UserbanUser(@PathVariable Long roomId,@PathVariable String userB ,@PathVariable String userC){
         participantServices.UserbanUser(roomId,userB,userC);
     }
   //  @PostMapping("/generate")

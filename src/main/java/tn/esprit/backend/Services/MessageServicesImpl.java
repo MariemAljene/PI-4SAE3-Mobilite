@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import tn.esprit.backend.Repository.MessageRepository;
-import tn.esprit.backend.Repository.ReactRepository;
-import tn.esprit.backend.Repository.RoomRepository;
-import tn.esprit.backend.Repository.UserRepository;
+import tn.esprit.backend.Repository.*;
 import tn.esprit.backend.model.*;
 import tn.esprit.backend.utils.FileUpload;
 
@@ -22,17 +19,19 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class MessageServicesImpl implements MessageServices{
+public class MessageServicesImpl implements MessageServices {
     @Autowired
     ReactRepository reactRepository;
     @Autowired
     MessageRepository messageRepository;
     @Autowired
-    private RoomRepository roomRepository;
+    RoomRepository roomRepository;
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
+    @Autowired
+    ParticipantServices participantServices;
 
-    @Override
+//    @Override
 //    public List<String> fetchBadWords() {
 //        List<String> badWords = new ArrayList<>();
 //        try {
@@ -46,8 +45,6 @@ public class MessageServicesImpl implements MessageServices{
 //                String[] values = line.split(",");
 //                if (values.length > 0) {
 //                    badWords.add(values[0]);
-//
-//
 //                }
 //            }
 //            bufferedReader.close();
@@ -56,6 +53,8 @@ public class MessageServicesImpl implements MessageServices{
 //        }
 //        return badWords;
 //    }
+//
+//}
     public List<String> fetchBadWords() {
         List<String> badWords = new ArrayList<>();
         try {
@@ -78,8 +77,43 @@ public class MessageServicesImpl implements MessageServices{
         }
         return badWords;
     }
+
     @Override
-  public Message createMessage(Message message, String roomId, String sender) {
+    public ResponseEntity<Message> addTagToMember(Long roomId,String message) {
+
+            int atIndex = message.indexOf('@');
+            if (atIndex == -1) {
+                return ResponseEntity.badRequest().build();// not founde
+            }
+
+            String domain = message.substring(atIndex + 1);
+            String[] parts = domain.split("\\.");
+          //  String usernameToCall = parts.length > 0 ? parts[parts.length - 1] : "";
+            String usernameToCall = message.substring(atIndex + 1).split("\\s+")[0];
+
+           List<User> members =participantServices.GetListOfMemvers(roomId);
+           System.out.println(members);
+        if (members.contains(usernameToCall)) {// when user don't exist
+            System.out.println("no user with this name");
+            System.out.println(usernameToCall);
+            return ResponseEntity.badRequest().build();
+            }else {
+
+            Message msg = new Message();
+            msg.setMessage(message);
+            messageRepository.save(msg);
+            System.out.println("userExist");
+
+            System.out.println(message);
+        }
+        return ResponseEntity.ok().build();
+        }
+
+
+
+
+    @Override
+  public Message createMessage(Message message, Long roomId, String sender) {
         Room room = roomRepository.findById(roomId).orElse(null);
        if (room != null) {
            message.setDateMessage(LocalDateTime.now());
@@ -95,7 +129,7 @@ public class MessageServicesImpl implements MessageServices{
     return message;
    }
     @Override
-    public String textMsg(String roomId, String sender, Message msg) {
+    public String textMsg(Long roomId, String sender, Message msg) {
         System.out.println("refdisc : "+roomId+" sender : "+sender+" message : "+msg.getMessage());
 
         Room room = roomRepository.findById(roomId).orElse(null);
@@ -140,7 +174,7 @@ public class MessageServicesImpl implements MessageServices{
     }
 
     @Override
-    public Message SendImageMessage(Message message, String roomId, MultipartFile multipartFile) {
+    public Message SendImageMessage(Message message, Long roomId, MultipartFile multipartFile) {
         Room room = roomRepository.findById(roomId).orElse(null);
         if (room != null) {
             message.setDateMessage(LocalDateTime.now());
@@ -160,7 +194,7 @@ public class MessageServicesImpl implements MessageServices{
 
 
     @Override
-    public List<Message> getAllMessagesForRoom(String roomId) {
+    public List<Message> getAllMessagesForRoom(Long roomId) {
 
         return messageRepository.getMessagesByOrder(roomId);
     }
@@ -172,7 +206,7 @@ public class MessageServicesImpl implements MessageServices{
     }
 
     @Override
-    public List<Message> getMessageByMsgType(MsgType type, String roomId) {
+    public List<Message> getMessageByMsgType(MsgType type, Long roomId) {
         Room room = roomRepository.findById(roomId).orElse(null);
 
         if (room != null) {
@@ -180,16 +214,6 @@ public class MessageServicesImpl implements MessageServices{
         }return null;
     }
 
-//    @Override
-//    public ResponseEntity<String> wasRead(Long messageId) {
-//        Message message = messageRepository.findById(messageId).orElse(null);
-//        if (message != null){
-//            //message.setWasRead(Boolean.FALSE);
-//            messageRepository.save(message);
-//            return ResponseEntity.ok("Message was marked as read");
-//        }
-//       return ResponseEntity.notFound().build();
-//    }
 
     @Override
     public String GetEmoji(String text) {
@@ -206,7 +230,145 @@ public class MessageServicesImpl implements MessageServices{
 
         return text;
     }
+    /*****
+     *
+     *     @Override
+     *     public ResponseEntity<Message> addTagToMember(Long roomId,String message) {
+     *
+     *             int atIndex = message.indexOf('@');
+     *             if (atIndex == -1) {
+     *                 return ResponseEntity.badRequest().build();// not founde
+     *             }
+     *
+     *             String domain = message.substring(atIndex + 1);
+     *             String[] parts = domain.split("\\.");
+     *           //  String usernameToCall = parts.length > 0 ? parts[parts.length - 1] : "";
+     *             String usernameToCall = message.substring(atIndex + 1).split("\\s+")[0];
+     *
+     *            List<User> members =participantServices.GetListOfMemvers(roomId);
+     *            System.out.println(members);
+     *         if (members.contains(usernameToCall)) {// when user don't exist
+     *             System.out.println("no user with this name");
+     *             System.out.println(usernameToCall);
+     *             return ResponseEntity.badRequest().build();
+     *             }else {
+     *
+     *             Message msg = new Message();
+     *             msg.setMessage(message);
+     *             messageRepository.save(msg);
+     *             System.out.println("userExist");
+     *
+     *             System.out.println(message);
+     *         }
+     *         return ResponseEntity.ok().build();
+     *         }
+     *
+     *
+     *
+     *
+     *     @Override
+     *   public Message createMessage(Message message, Long roomId, String sender) {
+     *         Room room = roomRepository.findById(roomId).orElse(null);
+     *        if (room != null) {
+     *            message.setDateMessage(LocalDateTime.now());
+     *            message.setRoom(room);
+     *            message.setMsgType(MsgType.Text);
+     *
+     *            User user =userRepository.findById(sender).orElse(null);
+     *            message.setSender(user);
+     *            String MessageWithEmoji = GetEmoji(message.getMessage());
+     *            message.setMessage(MessageWithEmoji);
+     *            return messageRepository.save(message);
+     *        }
+     *     return message;
+     *    }
+     *     @Override
+     *     public String textMsg(Long roomId, String sender, Message msg) {
+     *         System.out.println("refdisc : "+roomId+" sender : "+sender+" message : "+msg.getMessage());
+     *
+     *         Room room = roomRepository.findById(roomId).orElse(null);
+     *
+     *         room.setWasRead(Boolean.FALSE);
+     *         String msgC = msg.getMessage();
+     * //        try {
+     * //            msgC = tn.esprit.backend.utils.MessagerieUtils.filterbadwords(msgC);
+     * //            System.out.println(msgC);
+     * //        } catch (FileNotFoundException e) {
+     * //            System.out.println("fichier peut pas le lire");
+     * //            e.printStackTrace();
+     * //
+     * //        }
+     *         List<String> badWords = fetchBadWords();
+     *
+     *         boolean containsBadWord = false;
+     *         for (String badWord : badWords) {
+     *             if (msg.getMessage().toLowerCase().contains(badWord.toLowerCase())) {
+     *                 containsBadWord = true;
+     *                 break;
+     *             }
+     *         }
+     *
+     *         if (containsBadWord) {
+     *             String er="***" ;
+     *             return er;
+     *
+     *         }
+     *         msg.setMessage(msgC);
+     *         User Sender =userRepository.findById(sender).orElse(null);
+     *         msg.setSender(Sender);
+     *         msg.setMsgType(MsgType.Text);
+     *         msg.setDateMessage(LocalDateTime.now());
+     *         String MessageWithEmoji = GetEmoji(msg.getMessage());
+     *         msg.setMessage(MessageWithEmoji);
+     *         messageRepository.save(msg);
+     *
+     *         System.out.println(sender);
+     *         System.out.println(msg);
+     *         return msgC;
+     *     }*/
 
-
-
+/***
+    public Message createMessage(Message message, Long roomId, String sender){
+ *         Room room = roomRepository.findById(roomId).orElse(null);
+           User user =userRepository.findById(sender).orElse(null);
+ *          if (room != null) {
+ *
+ *      *            message.setDateMessage(LocalDateTime.now());
+ *      *            message.setRoom(room);
+ *      *            message.setMsgType(MsgType.Text);
+ *      *            message.setSender(user);
+ *
+ *      // test pour les tag
+ *      
+ *                    int atIndex = message.indexOf('@');
+ *      *             if (atIndex == -1) {
+ *      *                 return ResponseEntity.badRequest().build();// not founde
+ *      *             }
+ *      *
+ *      *             String domain = message.substring(atIndex + 1);
+ *      *             String[] parts = domain.split("\\.");
+ *      *           //  String usernameToCall = parts.length > 0 ? parts[parts.length - 1] : "";
+ *      *             String usernameToCall = message.substring(atIndex + 1).split("\\s+")[0];
+ *      *
+ *      *            List<User> members =participantServices.GetListOfMemvers(roomId);
+ *      *            System.out.println(members);
+ *      *         if (members.contains(usernameToCall)) {// when user don't exist
+ *      *             System.out.println("no user with this name");
+ *      *             System.out.println(usernameToCall);
+ *      *             return ResponseEntity.badRequest().build();
+ *      *             }else {
+ *      *
+ *      *             Message msg = new Message();
+ *      *             msg.setMessage(message);
+ *      *             messageRepository.save(msg);
+ *      *             System.out.println("userExist");
+ *      *
+ *      *             System.out.println(message);
+ *      *         }
+ *      //test bad words
+ *      //test emoji
+ *
+                 }
+ }
+*/
 }

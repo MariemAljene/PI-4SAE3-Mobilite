@@ -16,7 +16,7 @@ import java.util.List;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     List<Message> findAllByRoom(Room room);
     @Query("SELECT m FROM Room r JOIN r.messages m WHERE r.RoomId = :roomId ORDER BY m.DateMessage")
-    List<Message> getMessagesByOrder(@Param("roomId") String roomId);
+    List<Message> getMessagesByOrder(@Param("roomId") Long roomId);
     List<Message> findMessagesByMsgType( MsgType type);
     List<Message> findMessagesByMsgTypeAndRoom(MsgType msgType,Room room);
 

@@ -22,7 +22,7 @@ public class EventService  implements EventServiceImp{
 
 
     @Override
-    public ResponseEntity<String> createEvent(String roomId, Event event) {
+    public ResponseEntity<String> createEvent(Long roomId, Event event) {
         Room room = roomRepository.findById(roomId).orElse(null);
         Event eventExist = eventRepository.findEventByRoom(room);
         if (eventExist != null) {
@@ -35,7 +35,7 @@ public class EventService  implements EventServiceImp{
         }
     }
     @Override
-    public Event getEventsForRoom(String roomId) {
+    public Event getEventsForRoom(Long roomId) {
         Room room = roomRepository.findById(roomId).orElse(null);
         return eventRepository.findEventByRoom(room);
     }

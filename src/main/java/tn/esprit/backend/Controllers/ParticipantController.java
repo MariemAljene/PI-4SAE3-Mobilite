@@ -6,6 +6,9 @@ import tn.esprit.backend.Repository.ParticipantRepository;
 import tn.esprit.backend.Services.ParticipantServices;
 import tn.esprit.backend.model.Participant;
 import tn.esprit.backend.model.Room;
+import tn.esprit.backend.model.User;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("chat")
@@ -20,15 +23,28 @@ public class ParticipantController {
         return participantServices.createRoom(userName,room);
     }
     @PostMapping("/assignRoomToUser/{roomId}/{userId}")
-    public void addParticipationAndAssignRoomAndUser(@PathVariable String roomId, @PathVariable String userId){
+    public void addParticipationAndAssignRoomAndUser(@PathVariable Long roomId, @PathVariable String userId){
         participantServices.addParticipationAndAssignRoomAndUser(roomId,userId);
     }
     @DeleteMapping("/deleteRoom/{p}/{roomId}/{userId}")
-    public void DeleteParticipation(@PathVariable Participant p, @PathVariable String roomId, @PathVariable String userId){
+    public void DeleteParticipation(@PathVariable Participant p, @PathVariable Long roomId, @PathVariable String userId){
         participantServices.DeleteParticipation(p,roomId,userId);
     }
     @PostMapping("requestParticipation/{userName}/{roomId}")
-    public Participant requestParticipation(@PathVariable String userName,@PathVariable String roomId){
+    public Participant requestParticipation(@PathVariable String userName,@PathVariable Long roomId){
         return participantServices.requestParticipation(userName,roomId);
     }
+   @GetMapping("GetListMembeers")
+    public List<User> GetListOfMemvers(@PathVariable Long roomId){
+        return  participantServices.GetListOfMemvers(roomId);
+   }
+    @PostMapping("ajouterEtAffecterRoomUserss")
+    public  void ajouterEtAffecterRoomUserss(@RequestBody Room room ,@RequestBody List<Long> partipant){
+        participantServices.ajouterEtAffecterRoomUserss(room,partipant);
+    }
+    @PostMapping("UserbanUser/{roomId}/{userB}/{userC}")
+    public void UserbanUser(@PathVariable Long roomId,@PathVariable String userB,@PathVariable String userC) {
+        participantServices.UserbanUser(roomId,userB,userC);
+    }
+
 }

@@ -21,9 +21,9 @@ import java.util.List;
 @NoArgsConstructor
 public class Room {
     @Id
-
-    private String RoomId;
-   // @NotBlank(message = "name is required")
+    @GeneratedValue(strategy = GenerationType.IDENTITY )
+    private Long RoomId;
+    @NotBlank(message = "name is required")
     private String name;
     private Boolean access;//roomprivteorpuboic
     private int capacity;

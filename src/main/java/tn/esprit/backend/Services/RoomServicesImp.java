@@ -41,13 +41,13 @@ public class RoomServicesImp implements  RoomServices{
     }
 
     @Override
-    public Room getRoomById(String id) {
+    public Room getRoomById(Long id) {
         Room room =roomRepository.findById(id).orElse(null);
         return room;
     }
 
     @Override
-    public Room updateRoom(String id) {
+    public Room updateRoom(Long id) {
         Room r =  roomRepository.findById(id).orElse(null);
         if(r !=null) {
             return roomRepository.save(r);
@@ -57,7 +57,7 @@ public class RoomServicesImp implements  RoomServices{
 
 
     @Override
-    public void deleteRoom(String id) {
+    public void deleteRoom(Long id) {
         Room r = roomRepository.findById(id).orElse(null);
         if(r !=null) {
             roomRepository.delete(r);

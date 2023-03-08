@@ -27,11 +27,11 @@ public class MessageControllers {
     @Autowired
     MessageServices messageServices;
     @PostMapping("/SendTextMsg/{roomId}/{sender}")
-    public Message createMessage(@Valid @RequestBody Message message, @PathVariable String roomId,@PathVariable String sender){
+    public Message createMessage(@Valid @RequestBody Message message, @PathVariable Long roomId,@PathVariable String sender){
         return messageServices.createMessage(message,roomId, sender);
     }
     @PostMapping("/SendImageMessage/{roomId}/{sender}")
-    public Message SendImageMessage(@PathVariable String roomId, @PathVariable String sender,
+    public Message SendImageMessage(@PathVariable Long roomId, @PathVariable String sender,
                                     @RequestParam String messagecontent, @RequestParam("image") MultipartFile multipartFile) {
         Message message = new Message();
 
@@ -41,12 +41,12 @@ public class MessageControllers {
         return messageServices.SendImageMessage(message, roomId, multipartFile);
     }
     @PostMapping("/AddMsg/{roomId}/{sender}")
-    public String SendMessage(@PathVariable String roomId,@PathVariable String sender,@RequestBody Message message) {
+    public String SendMessage(@PathVariable Long roomId,@PathVariable String sender,@RequestBody Message message) {
         return messageServices.textMsg(roomId,sender,message);
     }
 
     @GetMapping("/GetConversation/{roomId}")
-    public List<Message> getAllMessagesForRoom(@PathVariable String roomId){
+    public List<Message> getAllMessagesForRoom(@PathVariable Long roomId){
         return messageServices.getAllMessagesForRoom(roomId);
     }
 
@@ -57,7 +57,12 @@ public class MessageControllers {
 
 
     @GetMapping("/GetMsgByType/{roomId}/{type}")
-    public List<Message> getMessageByMsgType(@PathVariable MsgType type, @PathVariable String roomId){
+    public List<Message> getMessageByMsgType(@PathVariable MsgType type, @PathVariable Long roomId){
         return messageServices.getMessageByMsgType(type,roomId);
+    }
+
+    @PostMapping("/addMessageWithTag/{roomId}")
+    public ResponseEntity<Message> addTagToMember(@PathVariable Long roomId,@RequestBody String message){
+        return messageServices.addTagToMember(roomId,message);
     }
 }

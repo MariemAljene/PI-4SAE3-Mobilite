@@ -17,11 +17,11 @@ public class EventController {
     EventService eventService;
 
     @PostMapping("/CreatEvent/{roomId}")
-    public ResponseEntity<String> createEvent(@PathVariable String roomId, @Valid @RequestBody Event event) {
+    public ResponseEntity<String> createEvent(@PathVariable Long roomId, @Valid @RequestBody Event event) {
         return  eventService.createEvent(roomId,event);
     }
     @GetMapping("/GetEventOfRoom/{roomId}")
-    public Event getEventsForRoom(@PathVariable String roomId){
+    public Event getEventsForRoom(@PathVariable Long roomId){
         return eventService.getEventsForRoom(roomId);
     }
     @GetMapping("/GetEvent/{id}")
