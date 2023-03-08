@@ -170,7 +170,7 @@ public class UserService {
     }
 
     public void changePassword(String userName, String newPassword) {
-        User user = userDao.findByuserName(userName);
+        User user = userDao.findByUserName(userName);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
@@ -179,7 +179,7 @@ public class UserService {
     }
     public void ISVerified(String userName) {
       int  verified=1;
-        User user = userDao.findByuserName(userName);
+        User user = userDao.findByUserName(userName);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
@@ -248,6 +248,8 @@ public class UserService {
         }
         return accountResponse;
     }
+
+
 
     //Compare given code with the one stored in DB and reset password.
     public UserAccountResponse resetPasswordSMS(UserNewPasswordSMS userNewPasswordSMS) {

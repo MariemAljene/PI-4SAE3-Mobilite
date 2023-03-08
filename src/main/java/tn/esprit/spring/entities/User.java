@@ -1,10 +1,13 @@
 package tn.esprit.spring.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,7 +24,7 @@ public class User implements Serializable {
     private String userLastName;
     private String userPassword;
     private String email;
-    private String Photo;
+
     private String userPhone;
     private LocalDate Birthdate;
     private String CIN;
@@ -62,6 +65,12 @@ public class User implements Serializable {
     )
     private Set<Role> role;
 
+    @OneToOne
+    private Image Photo;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "createdBy")
+    private List<Opportunity> opportunities = new ArrayList<>();
 
     public String getUserName() {
         return userName;

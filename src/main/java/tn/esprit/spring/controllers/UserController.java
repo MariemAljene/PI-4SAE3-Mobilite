@@ -1,10 +1,12 @@
 package tn.esprit.spring.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import tn.esprit.spring.entities.*;
 import tn.esprit.spring.repositories.UserRepository;
 import tn.esprit.spring.services.User.EmailService;
@@ -17,6 +19,7 @@ import javax.annotation.security.PermitAll;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -33,14 +36,38 @@ public class UserController {
     @PostMapping("/registerNewUser")
     public User createUser(@RequestBody User user) {
         User savedUser = userService.registerNewUser(user);
-      //  String to = user.getEmail();
-       // String subject = "Account Created";
-       // String text = "Your account has been created successfully.";
-       // userService.sendEmail(to, subject, text);
-        VerificationToken verificationToken = verificationTokenService.createVerificationToken(user); // création du jeton de vérification
+
+        UserVerificationToken verificationToken = verificationTokenService.createVerificationToken(user); // création du jeton de vérification
         verificationTokenService.saveVerificationToken(verificationToken);
         return savedUser;
     }
+   /* @PostMapping("/registerNewUser")
+    public User createUser(@RequestParam("userName") String userName,@RequestParam("userFirstName") String userFirstName,
+                           @RequestParam("userLastName") String userLastName,@RequestParam("userPassword") String userPassword
+                            ,@RequestParam("email") String email  ,@RequestParam("userPhone") String userPhone
+                            , @RequestParam("CV") MultipartFile CV ,@RequestParam("Role") String role) {
+
+      User user= new User();
+      user.setUserName(userName);
+      userService.AffectUserToRole(role,user);
+      for (Role role2:user.getRole())
+      {
+          log.info("role1hhhhhhhhhhhhhhhhhhhhhhh"+role2.getRoleName());
+      }
+
+      user.setCV(CV.getOriginalFilename());
+      user.setUserFirstName(userFirstName);
+      user.setUserLastName(userLastName);
+      user.setUserPassword(userPassword);
+      user.setEmail(email);
+      user.setUserPhone(userPhone);
+
+      User savedUser = userService.registerNewUser(user);
+
+        VerificationToken verificationToken = verificationTokenService.createVerificationToken(user); // création du jeton de vérification
+        verificationTokenService.saveVerificationToken(verificationToken);
+        return savedUser;
+    }*/
     @PutMapping("/activate/{verificationToken}")
     public ResponseEntity activateAccount(@PathVariable String verificationToken) {
         User user = userService.activateUser(verificationToken);

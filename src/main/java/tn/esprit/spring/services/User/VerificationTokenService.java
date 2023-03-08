@@ -3,7 +3,7 @@ package tn.esprit.spring.services.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tn.esprit.spring.entities.User;
-import tn.esprit.spring.entities.VerificationToken;
+import tn.esprit.spring.entities.UserVerificationToken;
 import tn.esprit.spring.repositories.VerificationTokenRepository;
 
 import java.time.LocalDateTime;
@@ -20,11 +20,11 @@ public class VerificationTokenService {
         this.verificationTokenRepository = verificationTokenRepository;
     }
 
-    public VerificationToken createVerificationToken(User user) {
+    public UserVerificationToken createVerificationToken(User user) {
         String token = generateVerificationToken();
         LocalDateTime expiryDate = LocalDateTime.now().plusDays(1);
 
-        VerificationToken verificationToken = new VerificationToken();
+        UserVerificationToken verificationToken = new UserVerificationToken();
         verificationToken.setToken(token);
         verificationToken.setUser(user);
         verificationToken.setExpiryDate(expiryDate);
@@ -33,20 +33,20 @@ public class VerificationTokenService {
         return verificationToken;
     }
 
-    public VerificationToken findByToken(String token) {
+    public UserVerificationToken findByToken(String token) {
         return verificationTokenRepository.findByToken(token);
     }
 
-    public void saveVerificationToken(VerificationToken verificationToken) {
+    public void saveVerificationToken(UserVerificationToken verificationToken) {
         verificationTokenRepository.save(verificationToken);
     }
 
     // méthode pour valider si le jeton est encore valide
-    public boolean isValidVerificationToken(VerificationToken verificationToken) {
+    public boolean isValidVerificationToken(UserVerificationToken verificationToken) {
         return verificationToken != null && !isExpired();
     }
     public boolean isExpired() {
-        VerificationToken verificationToken = new VerificationToken();
+        UserVerificationToken verificationToken = new UserVerificationToken();
         LocalDateTime now = LocalDateTime.now();
         return now.isAfter(verificationToken.getExpiryDate());
     }
