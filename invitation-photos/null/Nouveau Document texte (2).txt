@@ -1,0 +1,40 @@
+
+affichage ta3 liste des messages trier par temps /!\
+------------------------
+Contrôle de saisie (données sur Postman ou Swagger)
+Upload Image/Fichier
+Schedular
+AOP
+
+Chat (web socket)
+Messagerie simple (sans web socket)
+
+Filtre Bad words
+Statistiques
+
+event by all rooms
+
+
+
+
+
+react (user reat /// moyenne)
+////event crud (meet /fichier) 
+chat web socket ***
+/////Filtre Bad words : *****
+Upload Image/Fichier
+event : affiche / demande partcipition event / nb limité de mssg
+envoie msg : image et vidoe gif .....
+//////////////////ban user **
+lever la main 
+video 
+notif 
+msg vocal 
+//////////jeux **
+event nombre partcp limité ***
+tag **
+//////////demande partpion** 
+
+
+
+
