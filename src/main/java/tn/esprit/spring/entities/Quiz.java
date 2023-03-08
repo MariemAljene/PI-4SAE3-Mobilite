@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,15 +24,19 @@ public class Quiz implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_Quiz;
-
+    @NotBlank(message = "Title is mandatory")
     private String title;
+    @NotBlank(message = "Description is mandatory")
+
     private String description;
+    @NotNull(message = "Duration is mandatory")
+
     private int Duration;
 
     @JsonIgnore
     @OneToOne
     private Opportunity opportunity;
-
+    @Size(min = 1, message = "Quiz must have at least one question")
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "quiz_question",
@@ -42,7 +47,12 @@ public class Quiz implements Serializable {
 
 
     private LocalDate startDate;
+    @Min(value = 1, message = "Quiz must have at least 1 question")
+    @Max(value = 100, message = "Quiz can have up to 100 questions")
     private int nbQuestion;
+    @NotNull(message = "End date is mandatory")
+
+
     private LocalDate endDate;
 
     public Quiz(String title, String description, Opportunity opportunity, List<Question> questions, LocalDate startDate, LocalDate endDate) {

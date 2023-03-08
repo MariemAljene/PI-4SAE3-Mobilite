@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,20 +23,41 @@ public class Opportunity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer Id_Opportunity;
+    @NotNull
+    @Positive
     private int Capacity;
+    @NotNull
+    @FutureOrPresent
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate StarDate;
+    @NotNull
+    @Future
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate EndDate;
+    @NotNull
     @Enumerated(EnumType.STRING)
     private TypeOpp Type;
+    @NotNull
     @Enumerated(EnumType.STRING)
     private Grade grade;
     @Enumerated(EnumType.STRING)
     private Speciality specialite;
+    @Positive
     private float needs;
+    @NotBlank
+    @Size(max = 500)
     private String Description;
+    @NotBlank
+    @Size(max = 100)
     private String Title;
+    @NotNull
+    @Positive
     private float Coef1stYear;
+    @NotNull
+    @Positive
     private float Coef2stYear;
+    @NotNull
+    @Positive
     private float Coef3stYear;
     @Column(length = 1000)
     @JsonIgnore
