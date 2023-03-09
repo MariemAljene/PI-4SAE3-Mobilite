@@ -30,12 +30,12 @@ public class Quiz implements Serializable {
 
     private String description;
     @NotNull(message = "Duration is mandatory")
-
     private int Duration;
 
     @JsonIgnore
     @OneToOne
     private Opportunity opportunity;
+    @JsonIgnore
     @Size(min = 1, message = "Quiz must have at least one question")
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
@@ -49,6 +49,8 @@ public class Quiz implements Serializable {
     private LocalDate startDate;
     @Min(value = 1, message = "Quiz must have at least 1 question")
     @Max(value = 100, message = "Quiz can have up to 100 questions")
+    @JsonIgnore
+
     private int nbQuestion;
     @NotNull(message = "End date is mandatory")
 

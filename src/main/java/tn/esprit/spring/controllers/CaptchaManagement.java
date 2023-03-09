@@ -52,6 +52,7 @@ public class CaptchaManagement {
         Schedule schedule = new Schedule();
         schedule.setStatus(0);
         schedule.setTypeScheduel(TypeScheduel.Second_Selection);
+        schedule.setEndDate(LocalDate.now());
       //  schedule.setCandidates(pi_mobilityImplementation.sendSelectedCandidatesEmailsQuiz(savedQuizAttempt.getCondidacy().getOpportunity().getId_Opportunity()));
         scheduelRepository.save(schedule);
         quizAttempt.setScheduleSecondSelection(schedule);

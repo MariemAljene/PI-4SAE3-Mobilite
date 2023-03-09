@@ -65,8 +65,7 @@ public class User implements Serializable {
     )
     private Set<Role> role;
 
-    @OneToOne
-    private image Photo;
+
 
     @JsonIgnore
     @OneToMany(mappedBy = "createdBy")
