@@ -102,7 +102,7 @@ public class CandidacyManagement {
 
     }
 
-   
+
 
     @ResponseBody
     @GetMapping("/CalculScore/{opportuniteId}")
