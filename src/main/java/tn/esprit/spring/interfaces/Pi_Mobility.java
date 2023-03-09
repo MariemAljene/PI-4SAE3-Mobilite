@@ -57,6 +57,6 @@ public interface Pi_Mobility {
 List<Question> RtreiveQuestionOfQuizBySpeciality(String UserName,Integer id_Quiz);
     public Map<String, Double> getAvgQuizScoreByOpportunityType() ;
 
-
+    public List<HistoryCandidaciesDTO> getCandidacyHistoryForStudent(String idUser);
 
     }

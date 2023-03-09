@@ -14,8 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/CaptchaTry")
-public class CaptchaTest {
+@RequestMapping("/CaptchaManagement")
+public class CaptchaManagement {
     @Autowired
     QuizAttemptRepository quizAttemptRepository;
     @Autowired

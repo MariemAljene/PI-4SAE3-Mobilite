@@ -10,8 +10,8 @@ import tn.esprit.spring.repositories.OpportunityRepository;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/Rating")
-public class RatingController {
+@RequestMapping("/RatingManagement")
+public class RatingManagement {
     @Autowired
     OpportunityRepository opportunityRepository;
     @PostMapping("/opportunities/rating")

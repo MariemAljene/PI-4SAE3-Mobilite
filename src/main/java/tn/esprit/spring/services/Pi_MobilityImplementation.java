@@ -701,4 +701,26 @@ public class Pi_MobilityImplementation implements Pi_Mobility {
         return resultMap;
     }
 
+    @Override
+    public List<HistoryCandidaciesDTO> getCandidacyHistoryForStudent(String idUser) {
+        User user = userRepository.findById(idUser).orElse(null);
+
+        List<Condidacy> candidacies = condidacyRepository.findAllByUser(user);
+
+        // Map candidacies to DTOs
+        List<HistoryCandidaciesDTO> candidacyDTOs = new ArrayList<>();
+        for (Condidacy candidacy : candidacies) {
+            HistoryCandidaciesDTO candidacyDTO = new HistoryCandidaciesDTO();
+            candidacyDTO.setAverage1Year(candidacy.getMoyenne_1year());
+            candidacyDTO.setAverage2Year(candidacy.getMoyenne_2year());
+            candidacyDTO.setAverage3Year(candidacy.getMoyenne_3year());
+            candidacyDTO.setScore(candidacy.getScore());
+            candidacyDTO.setStatus(candidacy.getStatus());
+            candidacyDTO.setOpportunityName(candidacy.getOpportunity().getTitle());
+            candidacyDTOs.add(candidacyDTO);
+        }
+
+        return candidacyDTOs;
+    }
+
 }
